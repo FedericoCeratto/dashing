@@ -1,7 +1,7 @@
 
 image:https://img.shields.io/badge/status-alpha-orange.svg[badge]
 image:https://img.shields.io/badge/version-0.1.0-orange.svg[badge]
-image:https://img.shields.io/pypi/v/dashing.svg?style=plastic["Latest Version", link="https://pypi.python.org/pypi/bottle-cork"]
+image:https://img.shields.io/pypi/v/dashing.svg?style=plastic["Latest Version", link="https://pypi.python.org/pypi/dashing"]
 image:https://img.shields.io/badge/License-LGPL%20v3-blue.svg[License]
 
 Dashing is a library to quickly create terminal-based dashboards in Python.
