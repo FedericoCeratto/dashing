@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
-#
+"""Dashing GUI module.
 
+Based on https://github.com/FedericoCeratto/dashing
+"""
+from datetime import datetime
 from collections import deque, namedtuple
-
-from blessed import Terminal
-
+from buzio import formatStr
 try:
     unichr
 except NameError:
@@ -29,14 +29,24 @@ TBox = namedtuple('TBox', 't x y w h')
 
 
 class Tile(object):
-    def __init__(self, title=None, border_color=None, color=0):
+    """Tile Object."""
+
+    def __init__(
+        self,
+        title=None,
+        border_color=None,
+        color=0,
+        terminal=None,
+        main=False
+    ):
+        """Init class."""
         self.title = title
         self.color = color
         self.border_color = border_color
+        self._terminal = terminal
+        self._main = main
 
     def _display(self, tbox, parent):
-        """Render current tile
-        """
         raise NotImplementedError
 
     def _draw_borders(self, tbox):
@@ -52,9 +62,6 @@ class Tile(object):
               border_h * (tbox.w - 2) + border_br)
 
     def _draw_borders_and_title(self, tbox):
-        """Draw borders and title as needed and returns
-        inset (x, y, width, height)
-        """
         if self.border_color is not None:
             self._draw_borders(tbox)
         if self.title:
@@ -69,28 +76,26 @@ class Tile(object):
 
         return TBox(tbox.t, tbox.x, tbox.y, tbox.w, tbox.h)
 
-    def _fill_area(self, tbox, char, *a, **kw):  # FIXME
-        """Fill area with a character
-        """
-        # for dx in range(0, height):
-        #    print(tbox.t.move(x + dx, tbox.y) + char * width)
-        pass
+    def _fill_area(self, tbox, char=""):
+        usable_height = tbox.h - 1
+        usable_width = tbox.w - 1
+        line = "{:{c}^{num}}".format('', c=char, num=usable_width)
+        for count in range(1, usable_height):
+            print(tbox.t.move(tbox.x + count, tbox.y + 1) + line)
 
     def display(self):
-        """Render current tile and its items. Recurse into nested splits
-        if any.
-        """
-        try:
-            t = self._terminal
-        except AttributeError:
-            t = self._terminal = Terminal()
-            tbox = TBox(t, 0, 0, t.width, t.height - 1)
-            self._fill_area(tbox.t, 0, 0, t.width, t.height - 1, 'f')  # FIXME
+        """Render current tile and its items.
 
+        Recurse into nested splits if any.
+        """
+        t = self._terminal
+        tbox = TBox(t, 0, 0, t.width, t.height - 1)
+        self._fill_area(tbox)
+
+        if self._main:
+            self._terminal.clear()
         tbox = TBox(t, 0, 0, t.width, t.height - 1)
         self._display(tbox, None)
-        # park cursor in a safe place and reset color
-        print(t.move(t.height - 3, 0) + t.color(0))
 
     def _draw_title(self, tbox, fill_all_width):
         if not self.title:
@@ -101,20 +106,58 @@ class Tile(object):
         if fill_all_width:
             title = ' ' * margin + self.title + \
                 ' ' * (tbox.w - margin - len(self.title))
-            print(tbox.t.move(tbox.x, tbox.y) + col + title)
+            if ":" in title:
+                print(
+                    tbox.t.move(
+                        tbox.x,
+                        tbox.y) +
+                    col +
+                    "".join(
+                        title.split(":")[0]))
+                print(
+                    tbox.t.move(
+                        tbox.x +
+                        tbox.h -
+                        1,
+                        tbox.y +
+                        1) +
+                    col +
+                    title.split(":")[1])
+            else:
+                print(tbox.t.move(tbox.x, tbox.y) + col + title)
         else:
             title = ' ' * margin + self.title + ' ' * margin
-            print(tbox.t.move(tbox.x, tbox.y + margin) + col + title)
+            if ":" in title:
+                print(
+                    tbox.t.move(
+                        tbox.x,
+                        tbox.y +
+                        margin) +
+                    col +
+                    "".join(
+                        title.split(":")[0]))
+                print(
+                    tbox.t.move(
+                        tbox.x +
+                        tbox.h -
+                        1,
+                        tbox.y +
+                        1) +
+                    col +
+                    title.split(":")[1])
+            else:
+                print(tbox.t.move(tbox.x, tbox.y + margin) + col + title)
 
 
 class Split(Tile):
+    """Split Base Class."""
+
     def __init__(self, *items, **kw):
+        """Init class."""
         super(Split, self).__init__(**kw)
         self.items = items
 
     def _display(self, tbox, parent):
-        """Render current tile and its items. Recurse into nested splits
-        """
         tbox = self._draw_borders_and_title(tbox)
 
         if not self.items:
@@ -151,15 +194,22 @@ class Split(Tile):
 
 
 class VSplit(Split):
+    """Split Subclass for verical split."""
+
     pass
 
 
 class HSplit(Split):
+    """Split Subclass for horizontal split."""
+
     pass
 
 
 class Text(Tile):
+    """Text UI widget."""
+
     def __init__(self, text, color=0, *args, **kw):
+        """Init Class."""
         super(Text, self).__init__(**kw)
         self.text = text
         self.color = color
@@ -176,7 +226,11 @@ class Text(Tile):
 
 
 class Log(Tile):
-    def __init__(self, *args, **kw):
+    """Logger-like UI widget."""
+
+    def __init__(self, date_format="%b-%d-%y %H:%M:%S", *args, **kw):
+        """Init class."""
+        self.date_format = date_format
         self.logs = deque(maxlen=50)
         super(Log, self).__init__(**kw)
 
@@ -196,11 +250,39 @@ class Log(Tile):
                 print(tbox.t.move(tbox.x + i2, tbox.y) + ' ' * tbox.w)
 
     def append(self, msg):
+        """Append new messages to Log."""
+        self.logs.append(msg)
+
+    def _get_header(self):
+        now = datetime.now()
+        date_string = now.strftime(self.date_format)
+        return date_string
+
+    def info(self, msg):
+        """Append info messages to log."""
+        self.logs.append(
+            "[{}]".format(self._get_header())
+        )
+        msg = "[INFO]: {}".format(msg)
+        self.logs.append(msg)
+
+    def warn(self, msg):
+        """Append warning messages to log."""
+        self.logs.append(
+            "[{}]".format(self._get_header())
+        )
+        msg = formatStr.warning(
+            "[WARNING]: {}".format(msg),
+            use_prefix=False
+        )
         self.logs.append(msg)
 
 
 class HGauge(Tile):
+    """Horizontal Gauge UI widget."""
+
     def __init__(self, label=None, val=100, color=2, **kw):
+        """Init class."""
         kw['color'] = color
         super(HGauge, self).__init__(**kw)
         self.value = val
@@ -235,14 +317,15 @@ class HGauge(Tile):
 
 
 class VGauge(Tile):
+    """Vertical Gauge UI widget."""
+
     def __init__(self, val=100, color=2, **kw):
+        """Init class."""
         kw['color'] = color
         super(VGauge, self).__init__(**kw)
         self.value = val
 
     def _display(self, tbox, parent):
-        """Render current tile
-        """
         tbox = self._draw_borders_and_title(tbox)
         nh = tbox.h * (self.value / 100.5)
         print(tbox.t.move(tbox.x, tbox.y) + tbox.t.color(self.color))
@@ -261,10 +344,13 @@ class VGauge(Tile):
 
 class ColorRangeVGauge(Tile):
     """Vertical gauge with color map.
+
     E.g.: green gauge for values below 50, red otherwise:
     colormap=((50, 2), (100, 1))
     """
+
     def __init__(self, val=100, colormap=(), **kw):
+        """Init class."""
         self.colormap = colormap
         super(ColorRangeVGauge, self).__init__(**kw)
         self.value = val
@@ -291,14 +377,19 @@ class ColorRangeVGauge(Tile):
 
 
 class VChart(Tile):
-    """Vertical chart. Values must be between 0 and 100 and can be float.
+    """Vertical chart.
+
+    Values must be between 0 and 100 and can be float.
     """
+
     def __init__(self, val=100, *args, **kw):
+        """Init class."""
         super(VChart, self).__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=50)
 
     def append(self, dp):
+        """Append points to chart."""
         self.datapoints.append(dp)
 
     def _display(self, tbox, parent):
@@ -320,14 +411,16 @@ class VChart(Tile):
 
 
 class HChart(Tile):
-    """Horizontal chart, filled
-    """
+    """Horizontal chart, filled."""
+
     def __init__(self, val=100, *args, **kw):
+        """Init class."""
         super(HChart, self).__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
     def append(self, dp):
+        """Append points to chart."""
         self.datapoints.append(dp)
 
     def _display(self, tbox, parent):
@@ -356,12 +449,16 @@ class HChart(Tile):
 
 
 class HBrailleChart(Tile):
+    """Horizontal Braille Chart UI widget."""
+
     def __init__(self, val=100, *args, **kw):
+        """Init class."""
         super(HBrailleChart, self).__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
     def append(self, dp):
+        """Append points to chart."""
         self.datapoints.append(dp)
 
     def _generate_braille(self, l, r):
@@ -403,12 +500,16 @@ class HBrailleChart(Tile):
 
 
 class HBrailleFilledChart(Tile):
+    """Horizontal Filled Braille Chart UI Widget."""
+
     def __init__(self, val=100, *args, **kw):
+        """Init class."""
         super(HBrailleFilledChart, self).__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
     def append(self, dp):
+        """Append points to chart."""
         self.datapoints.append(dp)
 
     def _generate_braille(self, lmax, rmax):
