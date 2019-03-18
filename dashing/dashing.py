@@ -41,8 +41,14 @@ class Tile(object):
 
     def _draw_borders(self, tbox):
         # top border
-        print(tbox.t.color(self.border_color) + tbox.t.move(tbox.x, tbox.y) +
-              border_tl + border_h * (tbox.w - 2) + border_tr)
+        print(
+            tbox.t.color(self.border_color)
+            + tbox.t.move(tbox.x, tbox.y)
+            + border_tl
+            + border_h
+            * (tbox.w - 2)
+            + border_tr
+        )
         # left and right
         for dx in range(1, tbox.h - 1):
             print(tbox.t.move(tbox.x + dx, tbox.y) + border_v)

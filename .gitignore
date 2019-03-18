@@ -1,3 +1,7 @@
+# Editor
+.vscode/
+
+# Binary
 *.py[cod]
 
 # C extensions
