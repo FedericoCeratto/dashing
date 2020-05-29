@@ -12,12 +12,12 @@ except NameError:
 
 # "graphic" elements
 
-border_bl = u'└'
-border_br = u'┘'
-border_tl = u'┌'
-border_tr = u'┐'
-border_h = u'─'
-border_v = u'│'
+border_bl = u"└"
+border_br = u"┘"
+border_tl = u"┌"
+border_tr = u"┐"
+border_h = u"─"
+border_v = u"│"
 hbar_elements = (u"▏", u"▎", u"▍", u"▌", u"▋", u"▊", u"▉")
 vbar_elements = (u"▁", u"▂", u"▃", u"▄", u"▅", u"▆", u"▇", u"█")
 braille_left = (0x01, 0x02, 0x04, 0x40, 0)
@@ -25,7 +25,7 @@ braille_right = (0x08, 0x10, 0x20, 0x80, 0)
 braille_r_left = (0x04, 0x02, 0x01)
 braille_r_right = (0x20, 0x10, 0x08)
 
-TBox = namedtuple('TBox', 't x y w h')
+TBox = namedtuple("TBox", "t x y w h")
 
 
 class Tile(object):
@@ -45,8 +45,7 @@ class Tile(object):
             tbox.t.color(self.border_color)
             + tbox.t.move(tbox.x, tbox.y)
             + border_tl
-            + border_h
-            * (tbox.w - 2)
+            + border_h * (tbox.w - 2)
             + border_tr
         )
         # left and right
@@ -54,8 +53,12 @@ class Tile(object):
             print(tbox.t.move(tbox.x + dx, tbox.y) + border_v)
             print(tbox.t.move(tbox.x + dx, tbox.y + tbox.w - 1) + border_v)
         # bottom
-        print(tbox.t.move(tbox.x + tbox.h - 1, tbox.y) + border_bl +
-              border_h * (tbox.w - 2) + border_br)
+        print(
+            tbox.t.move(tbox.x + tbox.h - 1, tbox.y)
+            + border_bl
+            + border_h * (tbox.w - 2)
+            + border_br
+        )
 
     def _draw_borders_and_title(self, tbox):
         """Draw borders and title as needed and returns
@@ -64,7 +67,7 @@ class Tile(object):
         if self.border_color is not None:
             self._draw_borders(tbox)
         if self.title:
-            fill_all_width = (self.border_color is None)
+            fill_all_width = self.border_color is None
             self._draw_title(tbox, fill_all_width)
 
         if self.border_color is not None:
@@ -91,7 +94,7 @@ class Tile(object):
         except AttributeError:
             t = self._terminal = Terminal()
             tbox = TBox(t, 0, 0, t.width, t.height - 1)
-            self._fill_area(tbox.t, 0, 0, t.width, t.height - 1, 'f')  # FIXME
+            self._fill_area(tbox.t, 0, 0, t.width, t.height - 1, "f")  # FIXME
 
         tbox = TBox(t, 0, 0, t.width, t.height - 1)
         self._display(tbox, None)
@@ -102,14 +105,14 @@ class Tile(object):
         if not self.title:
             return
         margin = int((tbox.w - len(self.title)) / 20)
-        col = '' if self.border_color is None else \
-            tbox.t.color(self.border_color)
+        col = "" if self.border_color is None else tbox.t.color(self.border_color)
         if fill_all_width:
-            title = ' ' * margin + self.title + \
-                ' ' * (tbox.w - margin - len(self.title))
+            title = (
+                " " * margin + self.title + " " * (tbox.w - margin - len(self.title))
+            )
             print(tbox.t.move(tbox.x, tbox.y) + col + title)
         else:
-            title = ' ' * margin + self.title + ' ' * margin
+            title = " " * margin + self.title + " " * margin
             print(tbox.t.move(tbox.x, tbox.y + margin) + col + title)
 
 
@@ -125,7 +128,7 @@ class Split(Tile):
 
         if not self.items:
             # empty split
-            self._fill_area(tbox, ' ')
+            self._fill_area(tbox, " ")
             return
 
         if isinstance(self, VSplit):
@@ -138,8 +141,7 @@ class Split(Tile):
         x = tbox.x
         y = tbox.y
         for i in self.items:
-            i._display(TBox(tbox.t, x, y, item_width, item_height),
-                       self)
+            i._display(TBox(tbox.t, x, y, item_width, item_height), self)
             if isinstance(self, VSplit):
                 x += item_height
             else:
@@ -149,11 +151,11 @@ class Split(Tile):
         if isinstance(self, VSplit):
             leftover_x = tbox.h - x + 1
             if leftover_x > 0:
-                self._fill_area(TBox(tbox.t, x, y, tbox.w, leftover_x), ' ')
+                self._fill_area(TBox(tbox.t, x, y, tbox.w, leftover_x), " ")
         else:
             leftover_y = tbox.w - y + 1
             if leftover_y > 0:
-                self._fill_area(TBox(tbox.t, x, y, leftover_y, tbox.h), ' ')
+                self._fill_area(TBox(tbox.t, x, y, leftover_y, tbox.h), " ")
 
 
 class VSplit(Split):
@@ -173,11 +175,15 @@ class Text(Tile):
     def _display(self, tbox, parent):
         tbox = self._draw_borders_and_title(tbox)
         for dx, line in enumerate(self.text.splitlines()):
-            print(tbox.t.color(self.color) + tbox.t.move(tbox.x + dx, tbox.y) +
-                  line + ' ' * (tbox.w - len(line)))
+            print(
+                tbox.t.color(self.color)
+                + tbox.t.move(tbox.x + dx, tbox.y)
+                + line
+                + " " * (tbox.w - len(line))
+            )
         dx += 1
         while dx < tbox.h:
-            print(tbox.t.move(tbox.x + dx, tbox.y) + ' ' * tbox.w)
+            print(tbox.t.move(tbox.x + dx, tbox.y) + " " * tbox.w)
             dx += 1
 
 
@@ -194,12 +200,11 @@ class Log(Tile):
         print(tbox.t.color(self.color))
         for i in range(0, log_range):
             line = self.logs[start + i]
-            print(tbox.t.move(tbox.x + i, tbox.y) + line +
-                  ' ' * (tbox.w - len(line)))
+            print(tbox.t.move(tbox.x + i, tbox.y) + line + " " * (tbox.w - len(line)))
 
         if i < tbox.h:
             for i2 in range(i + 1, tbox.h):
-                print(tbox.t.move(tbox.x + i2, tbox.y) + ' ' * tbox.w)
+                print(tbox.t.move(tbox.x + i2, tbox.y) + " " * tbox.w)
 
     def append(self, msg):
         self.logs.append(msg)
@@ -207,7 +212,7 @@ class Log(Tile):
 
 class HGauge(Tile):
     def __init__(self, label=None, val=100, color=2, **kw):
-        kw['color'] = color
+        kw["color"] = color
         super(HGauge, self).__init__(**kw)
         self.value = val
         self.label = label
@@ -233,16 +238,16 @@ class HGauge(Tile):
             if self.label:
                 if dx == v_center:
                     # draw label
-                    print(m + self.label + ' ' + bar)
+                    print(m + self.label + " " + bar)
                 else:
-                    print(m + ' ' * len(self.label) + ' ' + bar)
+                    print(m + " " * len(self.label) + " " + bar)
             else:
                 print(m + bar)
 
 
 class VGauge(Tile):
     def __init__(self, val=100, color=2, **kw):
-        kw['color'] = color
+        kw["color"] = color
         super(VGauge, self).__init__(**kw)
         self.value = val
 
@@ -260,7 +265,7 @@ class VGauge(Tile):
                 index = int((nh - int(nh)) * 8)
                 bar = vbar_elements[index] * tbox.w
             else:
-                bar = ' ' * tbox.w
+                bar = " " * tbox.w
 
             print(m + bar)
 
@@ -270,6 +275,7 @@ class ColorRangeVGauge(Tile):
     E.g.: green gauge for values below 50, red otherwise:
     colormap=((50, 2), (100, 1))
     """
+
     def __init__(self, val=100, colormap=(), **kw):
         self.colormap = colormap
         super(ColorRangeVGauge, self).__init__(**kw)
@@ -291,7 +297,7 @@ class ColorRangeVGauge(Tile):
                 index = int((nh - int(nh)) * 8)
                 bar = vbar_elements[index] * tbox.w
             else:
-                bar = ' ' * tbox.w
+                bar = " " * tbox.w
 
             print(m + bar)
 
@@ -299,6 +305,7 @@ class ColorRangeVGauge(Tile):
 class VChart(Tile):
     """Vertical chart. Values must be between 0 and 100 and can be float.
     """
+
     def __init__(self, val=100, *args, **kw):
         super(VChart, self).__init__(**kw)
         self.value = val
@@ -319,15 +326,16 @@ class VChart(Tile):
                 index = int((dp - int(dp)) * 8)
                 bar = filled_element * int(dp) + hbar_elements[index]
                 assert len(bar) <= tbox.w, dp
-                bar += ' ' * (tbox.w - len(bar))
+                bar += " " * (tbox.w - len(bar))
             except IndexError:
-                bar = ' ' * tbox.w
+                bar = " " * tbox.w
             print(tbox.t.move(tbox.x + dx, tbox.y) + bar)
 
 
 class HChart(Tile):
     """Horizontal chart, filled
     """
+
     def __init__(self, val=100, *args, **kw):
         super(HChart, self).__init__(**kw)
         self.value = val
@@ -340,9 +348,9 @@ class HChart(Tile):
         tbox = self._draw_borders_and_title(tbox)
         print(tbox.t.color(self.color))
         for dx in range(tbox.h):
-            bar = ''
+            bar = ""
             for dy in range(tbox.w):
-                dp_index = - tbox.w + dy
+                dp_index = -tbox.w + dy
                 try:
                     dp = self.datapoints[dp_index]
                     q = (1 - dp / 100) * tbox.h
@@ -350,12 +358,12 @@ class HChart(Tile):
                         index = int((int(q) - q) * 8 - 1)
                         bar += vbar_elements[index]
                     elif dx < int(q):
-                        bar += ' '
+                        bar += " "
                     else:
                         bar += vbar_elements[-1]
 
                 except IndexError:
-                    bar += ' '
+                    bar += " "
 
             # assert len(bar) == tbox.w
             print(tbox.t.move(tbox.x + dx, tbox.y) + bar)
@@ -378,7 +386,7 @@ class HBrailleChart(Tile):
         tbox = self._draw_borders_and_title(tbox)
         print(tbox.t.color(self.color))
         for dx in range(tbox.h):
-            bar = ''
+            bar = ""
             for dy in range(tbox.w):
                 dp_index = (dy - tbox.w) * 2
                 try:
@@ -386,7 +394,7 @@ class HBrailleChart(Tile):
                     dp2 = self.datapoints[dp_index + 1]
                 except IndexError:
                     # no data (yet)
-                    bar += ' '
+                    bar += " "
                     continue
 
                 q1 = (1 - dp1 / 100) * tbox.h
@@ -403,7 +411,7 @@ class HBrailleChart(Tile):
                     index2 = int((q2 - int(q2)) * 4)
                     bar += self._generate_braille(-1, index2)
                 else:
-                    bar += ' '
+                    bar += " "
 
             print(tbox.t.move(tbox.x + dx, tbox.y) + bar)
 
@@ -429,7 +437,7 @@ class HBrailleFilledChart(Tile):
         tbox = self._draw_borders_and_title(tbox)
         print(tbox.t.color(self.color))
         for dx in range(tbox.h):
-            bar = ''
+            bar = ""
             for dy in range(tbox.w):
                 dp_index = (dy - tbox.w) * 2
                 try:
@@ -437,7 +445,7 @@ class HBrailleFilledChart(Tile):
                     dp2 = self.datapoints[dp_index + 1]
                 except IndexError:
                     # no data (yet)
-                    bar += ' '
+                    bar += " "
                     continue
 
                 q1 = (1 - dp1 / 100.0) * tbox.h
