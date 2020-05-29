@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.1'
+version = '0.1.0'
 
 setup(name='dashing',
       version=version,
@@ -8,7 +8,7 @@ setup(name='dashing',
       long_description="""\
 Easily create dashboards""",
       classifiers=[
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 4 - Beta',
           'Environment :: Console',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
