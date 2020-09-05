@@ -78,12 +78,11 @@ class Tile(object):
 
         return TBox(tbox.t, tbox.x, tbox.y, tbox.w, tbox.h)
 
-    def _fill_area(self, tbox, char, *a, **kw):  # FIXME
+    def _fill_area(self, tbox, char, *a, **kw):
         """Fill area with a character
         """
-        # for dx in range(0, height):
-        #    print(tbox.t.move(x + dx, tbox.y) + char * width)
-        pass
+        for dx in range(0, tbox.h):
+            print(tbox.t.move(tbox.x + dx, tbox.y) + char * tbox.w)
 
     def display(self):
         """Render current tile and its items. Recurse into nested splits
@@ -94,7 +93,7 @@ class Tile(object):
         except AttributeError:
             t = self._terminal = Terminal()
             tbox = TBox(t, 0, 0, t.width, t.height - 1)
-            self._fill_area(tbox.t, 0, 0, t.width, t.height - 1, "f")  # FIXME
+            self._fill_area(TBox(tbox.t, 0, 0, t.width, t.height - 1, " ")
 
         tbox = TBox(t, 0, 0, t.width, t.height - 1)
         self._display(tbox, None)
