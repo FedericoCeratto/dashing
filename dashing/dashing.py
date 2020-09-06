@@ -1,5 +1,59 @@
 # -*- coding: utf-8 -*-
-#
+# Dashing - Released under LGPLv3, see LICENSE
+
+"""
+Dashing allows to quickly create terminal-based dashboards in Python.
+
+It focuses on practicality over completeness. If you want to have complete control
+over every character on the screen, use ncurses or similar.
+
+Dashing automatically fills the screen with "tiles".
+
+There are 2 type of "container" tiles that allow vertical and horizontal splitting
+called VSplit and HSplit. Dashing scales them based on the screen size.
+
+Any tile passed as argument at init time will be nested using the .items attribute
+
+.items can be used to access, add or remove nested tiles.
+
+You can easily extend Dashing with new tile types. Subclass :class:`Tile`, implement
+__init__ and _display. See dashing.py for examples.
+
+The other types of tiles are:
+    - :class:`Text` - simple text
+    - :class:`Log` - a log pane that scrolls automatically
+    - :class:`HGauge` - horizontal gauge
+    - :class:`VGauge` - vertical gauge
+    - :class:`ColorRangeVGauge` - vertical gauge with coloring
+    - :class:`VChart` - vertical chart
+    - :class:`HChart` - horizontal chart
+    - :class:`HBrailleChart`
+    - :class:`HBrailleFilledChart`
+
+All tiles accept title, color, border_color keywords arguments at init time.
+
+Gauges represent an instant value between 0 and 100.
+You can set a value at init time using the val keyword argument or access the
+.value attribute at any time.
+
+Charts represent a sequence of values between 0 and 100 and scroll automatically.
+
+Call :meth:`display` on the root element to display or update the ui.
+
+You can easily nest splits and tiles as in::
+
+    ui = HSplit(
+            VSplit(
+                HGauge(val=50, title="foo", border_color=5),
+            )
+        )
+    # access a tile by index
+    gauge = ui.items[0].items[0]
+    gauge.value = 3.0
+
+    # display/refresh the ui
+    ui.display()
+"""
 
 from collections import deque, namedtuple
 
@@ -117,6 +171,8 @@ class Tile(object):
 
 
 class Split(Tile):
+    """Split a box vertically (VSplit) or horizontally (HSplit)
+    """
     def __init__(self, *items, **kw):
         super(Split, self).__init__(**kw)
         self.items = items
@@ -167,6 +223,11 @@ class HSplit(Split):
 
 
 class Text(Tile):
+    """A multi-line text box. Example::
+
+        Text('Hello World, this is dashing.', border_color=2),
+
+    """
     def __init__(self, text, color=0, *args, **kw):
         super(Text, self).__init__(**kw)
         self.text = text
@@ -188,6 +249,9 @@ class Text(Tile):
 
 
 class Log(Tile):
+    """A log pane that scrolls automatically.
+    Add new lines with :meth:`append`
+    """
     def __init__(self, *args, **kw):
         self.logs = deque(maxlen=50)
         super(Log, self).__init__(**kw)
@@ -207,10 +271,13 @@ class Log(Tile):
                 print(tbox.t.move(tbox.x + i2, tbox.y) + " " * tbox.w)
 
     def append(self, msg):
+        """Append a new log message at the bottom"""
         self.logs.append(msg)
 
 
 class HGauge(Tile):
+    """Horizontal gauge
+    """
     def __init__(self, label=None, val=100, color=2, **kw):
         kw["color"] = color
         super(HGauge, self).__init__(**kw)
@@ -246,6 +313,8 @@ class HGauge(Tile):
 
 
 class VGauge(Tile):
+    """Vertical gauge
+    """
     def __init__(self, val=100, color=2, **kw):
         kw["color"] = color
         super(VGauge, self).__init__(**kw)
@@ -312,6 +381,7 @@ class VChart(Tile):
         self.datapoints = deque(maxlen=50)
 
     def append(self, dp):
+        """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
 
     def _display(self, tbox, parent):
@@ -342,6 +412,7 @@ class HChart(Tile):
         self.datapoints = deque(maxlen=500)
 
     def append(self, dp):
+        """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
 
     def _display(self, tbox, parent):
@@ -370,12 +441,15 @@ class HChart(Tile):
 
 
 class HBrailleChart(Tile):
+    """Horizontal chart made with dots
+    """
     def __init__(self, val=100, *args, **kw):
         super(HBrailleChart, self).__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
     def append(self, dp):
+        """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
 
     def _generate_braille(self, l, r):
@@ -417,12 +491,15 @@ class HBrailleChart(Tile):
 
 
 class HBrailleFilledChart(Tile):
+    """Horizontal chart, filled with dots
+    """
     def __init__(self, val=100, *args, **kw):
         super(HBrailleFilledChart, self).__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
     def append(self, dp):
+        """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
 
     def _generate_braille(self, lmax, rmax):
