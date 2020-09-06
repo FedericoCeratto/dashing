@@ -23,34 +23,9 @@ Use packages from your Linux distribution, or:
 pip install dashing
 ----
 
-=== Quick mode
+=== Example
 
-If you want to provide a simple UI to a script, Dashing can generate a layout automatically.
-
-
-[source,python]
-----
-import time
-from dashing import QuickDash
-
-def main():
-    d = QuickDash()
-    d.status = "Running..."
-    d.logs.append("Started")
-    for progress in range(100):
-      d.gauges['progess'] = progress
-      if progress % 10 == 0:
-        d.logs.append("Started")
-      time.sleep(0.05)
-
-    d.status = "Done!"
-    time.sleep(1)
-----
-
-
-=== Normal mode
-
-In normal mode you have full control over the UI
+Also see demo.py
 
 .Usage
 [source,python]
