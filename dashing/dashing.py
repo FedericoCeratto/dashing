@@ -266,9 +266,9 @@ class Log(Tile):
             line = self.logs[start + i]
             print(tbox.t.move(tbox.x + i, tbox.y) + line + " " * (tbox.w - len(line)))
 
-        if i < tbox.h:
-            for i2 in range(i + 1, tbox.h):
-                print(tbox.t.move(tbox.x + i2, tbox.y) + " " * tbox.w)
+            if i < tbox.h:
+                for i2 in range(i + 1, tbox.h):
+                    print(tbox.t.move(tbox.x + i2, tbox.y) + " " * tbox.w)
 
     def append(self, msg):
         """Append a new log message at the bottom"""
