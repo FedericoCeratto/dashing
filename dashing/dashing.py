@@ -262,10 +262,12 @@ class Log(Tile):
         log_range = min(n_logs, tbox.h)
         start = n_logs - log_range
         print(tbox.t.color(self.color))
+        
+        i = 0
         for i in range(0, log_range):
             line = self.logs[start + i]
             print(tbox.t.move(tbox.x + i, tbox.y) + line + " " * (tbox.w - len(line)))
-
+        
         if i < tbox.h:
             for i2 in range(i + 1, tbox.h):
                 print(tbox.t.move(tbox.x + i2, tbox.y) + " " * tbox.w)
