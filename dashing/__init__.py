@@ -172,7 +172,7 @@ class Split(Tile):
     """Split a box vertically (VSplit) or horizontally (HSplit)"""
 
     def __init__(self, *items: Tile, **kw):
-        super(Split, self).__init__(**kw)
+        super().__init__(**kw)
         self.items = items
 
     def _display(self, tbox: TBox, parent: Optional[Tile]):
@@ -336,7 +336,7 @@ class ColorRangeVGauge(Tile):
 
     def __init__(self, val=100, colormap: Colormap = (), **kw):
         self.colormap = colormap
-        super(ColorRangeVGauge, self).__init__(**kw)
+        super().__init__(**kw)
         self.value = val
 
     def _display(self, tbox: TBox, parent: Optional[Tile]):
