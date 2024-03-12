@@ -52,6 +52,6 @@ You can easily nest splits and tiles as in::
     ui.display()
 """
 
-__version__ = '0.1.0'
+__version__ = "0.1.0"
 
 from .dashing import *  # noqa: F401, F403

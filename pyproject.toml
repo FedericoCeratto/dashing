@@ -23,8 +23,29 @@ dev = [
     "flake8~=7.0",
     "pre-commit~=3.0",
     "isort~=5.12",
-    "flake8-pyproject~=1.2"
+    "flake8-pyproject~=1.2",
+    "bump-my-version~=0.18"
 ]
 
 [tool.flake8]
 max-line-length = 88
+
+[tool.bumpversion]
+current_version = "0.1.0"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+regex = false
+ignore_missing_version = false
+tag = true
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = true
+message = "Bump version: {current_version} → {new_version}"
+commit_args = "--no-verify"
+
+[[tool.bumpversion.files]]
+filename = "dashing/__init__.py"
