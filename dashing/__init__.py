@@ -98,43 +98,13 @@ class Tile(object):
         """Render current tile"""
         raise NotImplementedError
 
-    def _draw_borders(self, tbox: TBox, title: str = None):
-        if title is None:
-            # top border without title
-            print(
-                tbox.t.color(self.border_color)
-                + tbox.t.move(tbox.x, tbox.y)
-                + border_tl
-                + border_h * (tbox.w - 2)
-                + border_tr
-            )
-        elif self.border_color is None:
-            # top title without border
-            margin = int((tbox.w - len(self.title)) / 20)
-            col = "" if self.border_color is None else tbox.t.color(self.border_color)
-            title = (
-                " " * margin + self.title + " " * (tbox.w - margin - len(self.title))
-            )
-            print(tbox.t.move(tbox.x, tbox.y) + col + title)
-        else:
-            # top border with title
-            top_line = border_h * (tbox.w - 2)
-            margin = int((tbox.w - len(self.title)) / 20)
-            top_line = (
-                top_line[:margin]
-                + " " * margin
-                + self.title
-                + " " * margin
-                + top_line[margin * 3 + len(self.title) :]
-            )
-            print(
-                tbox.t.color(self.border_color)
-                + tbox.t.move(tbox.x, tbox.y)
-                + border_tl
-                + top_line
-                + border_tr
-            )
+    def _draw_borders_and_title(self, tbox: TBox):
+        """
+        Draw borders and title as needed and returns
+        inset (x, y, width, height)
+        """
         if self.border_color is not None:
+            print(tbox.t.color(self.border_color))
             # left and right
             for dx in range(1, tbox.h - 1):
                 print(tbox.t.move(tbox.x + dx, tbox.y) + border_v)
@@ -146,12 +116,26 @@ class Tile(object):
                 + border_h * (tbox.w - 2)
                 + border_br
             )
+            if self.title is None:
+                # top border without title
+                border_t = border_h * (tbox.w - 2)
+            else:
+                # top border with title
+                margin = int((tbox.w - len(self.title)) / 20)
+                border_t = (
+                    border_h * (margin - 1) + " " * margin + self.title + " " * margin
+                )
+                border_t += (tbox.w - len(border_t) - 2) * border_h
+            # top
+            print(tbox.t.move(tbox.x, tbox.y) + border_tl + border_t + border_tr)
+        elif self.title is not None:
+            # top title without border
+            margin = int((tbox.w - len(self.title)) / 20)
 
-    def _draw_borders_and_title(self, tbox: TBox):
-        """Draw borders and title as needed and returns
-        inset (x, y, width, height)
-        """
-        self._draw_borders(tbox, title=self.title)
+            title = (
+                " " * margin + self.title + " " * (tbox.w - margin - len(self.title))
+            )
+            print(tbox.t.move(tbox.x, tbox.y) + title)
 
         if self.border_color is not None:
             return TBox(tbox.t, tbox.x + 1, tbox.y + 1, tbox.w - 2, tbox.h - 2)
