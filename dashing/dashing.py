@@ -12,14 +12,14 @@ except NameError:
 
 # "graphic" elements
 
-border_bl = u"└"
-border_br = u"┘"
-border_tl = u"┌"
-border_tr = u"┐"
-border_h = u"─"
-border_v = u"│"
-hbar_elements = (u"▏", u"▎", u"▍", u"▌", u"▋", u"▊", u"▉")
-vbar_elements = (u"▁", u"▂", u"▃", u"▄", u"▅", u"▆", u"▇", u"█")
+border_bl = "└"
+border_br = "┘"
+border_tl = "┌"
+border_tr = "┐"
+border_h = "─"
+border_v = "│"
+hbar_elements = ("▏", "▎", "▍", "▌", "▋", "▊", "▉")
+vbar_elements = ("▁", "▂", "▃", "▄", "▅", "▆", "▇", "█")
 braille_left = (0x01, 0x02, 0x04, 0x40, 0)
 braille_right = (0x08, 0x10, 0x20, 0x80, 0)
 braille_r_left = (0x04, 0x02, 0x01)
@@ -35,8 +35,7 @@ class Tile(object):
         self.border_color = border_color
 
     def _display(self, tbox, parent):
-        """Render current tile
-        """
+        """Render current tile"""
         raise NotImplementedError
 
     def _draw_borders(self, tbox):
@@ -79,8 +78,7 @@ class Tile(object):
         return TBox(tbox.t, tbox.x, tbox.y, tbox.w, tbox.h)
 
     def _fill_area(self, tbox, char, *a, **kw):  # FIXME
-        """Fill area with a character
-        """
+        """Fill area with a character"""
         # for dx in range(0, height):
         #    print(tbox.t.move(x + dx, tbox.y) + char * width)
         pass
@@ -117,15 +115,14 @@ class Tile(object):
 
 
 class Split(Tile):
-    """Split a box vertically (VSplit) or horizontally (HSplit)
-    """
+    """Split a box vertically (VSplit) or horizontally (HSplit)"""
+
     def __init__(self, *items, **kw):
         super(Split, self).__init__(**kw)
         self.items = items
 
     def _display(self, tbox, parent):
-        """Render current tile and its items. Recurse into nested splits
-        """
+        """Render current tile and its items. Recurse into nested splits"""
         tbox = self._draw_borders_and_title(tbox)
 
         if not self.items:
@@ -171,9 +168,10 @@ class HSplit(Split):
 class Text(Tile):
     """A multi-line text box. Example::
 
-        Text('Hello World, this is dashing.', border_color=2),
+    Text('Hello World, this is dashing.', border_color=2),
 
     """
+
     def __init__(self, text, color=0, *args, **kw):
         super(Text, self).__init__(**kw)
         self.text = text
@@ -198,6 +196,7 @@ class Log(Tile):
     """A log pane that scrolls automatically.
     Add new lines with :meth:`append`
     """
+
     def __init__(self, *args, **kw):
         self.logs = deque(maxlen=50)
         super(Log, self).__init__(**kw)
@@ -222,8 +221,8 @@ class Log(Tile):
 
 
 class HGauge(Tile):
-    """Horizontal gauge
-    """
+    """Horizontal gauge"""
+
     def __init__(self, label=None, val=100, color=2, **kw):
         kw["color"] = color
         super(HGauge, self).__init__(**kw)
@@ -259,16 +258,15 @@ class HGauge(Tile):
 
 
 class VGauge(Tile):
-    """Vertical gauge
-    """
+    """Vertical gauge"""
+
     def __init__(self, val=100, color=2, **kw):
         kw["color"] = color
         super(VGauge, self).__init__(**kw)
         self.value = val
 
     def _display(self, tbox, parent):
-        """Render current tile
-        """
+        """Render current tile"""
         tbox = self._draw_borders_and_title(tbox)
         nh = tbox.h * (self.value / 100.5)
         print(tbox.t.move(tbox.x, tbox.y) + tbox.t.color(self.color))
@@ -318,8 +316,7 @@ class ColorRangeVGauge(Tile):
 
 
 class VChart(Tile):
-    """Vertical chart. Values must be between 0 and 100 and can be float.
-    """
+    """Vertical chart. Values must be between 0 and 100 and can be float."""
 
     def __init__(self, val=100, *args, **kw):
         super(VChart, self).__init__(**kw)
@@ -349,8 +346,7 @@ class VChart(Tile):
 
 
 class HChart(Tile):
-    """Horizontal chart, filled
-    """
+    """Horizontal chart, filled"""
 
     def __init__(self, val=100, *args, **kw):
         super(HChart, self).__init__(**kw)
@@ -387,8 +383,8 @@ class HChart(Tile):
 
 
 class HBrailleChart(Tile):
-    """Horizontal chart made with dots
-    """
+    """Horizontal chart made with dots"""
+
     def __init__(self, val=100, *args, **kw):
         super(HBrailleChart, self).__init__(**kw)
         self.value = val
@@ -437,8 +433,8 @@ class HBrailleChart(Tile):
 
 
 class HBrailleFilledChart(Tile):
-    """Horizontal chart, filled with dots
-    """
+    """Horizontal chart, filled with dots"""
+
     def __init__(self, val=100, *args, **kw):
         super(HBrailleFilledChart, self).__init__(**kw)
         self.value = val
