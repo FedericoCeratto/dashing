@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 # Dashing - Released under LGPLv3, see LICENSE
-
+import contextlib
+import itertools
 from collections import deque, namedtuple
+from typing import Literal, Optional, Tuple
 
 from blessed import Terminal
-
-try:
-    unichr
-except NameError:
-    unichr = chr
 
 # "graphic" elements
 
@@ -26,19 +23,22 @@ braille_r_left = (0x04, 0x02, 0x01)
 braille_r_right = (0x20, 0x10, 0x08)
 
 TBox = namedtuple("TBox", "t x y w h")
+Color = Literal[0, 1, 2, 3, 4, 5, 6, 7]
+Colormap = Tuple[Tuple[float, Color], ...]
 
 
 class Tile(object):
-    def __init__(self, title=None, border_color=None, color=0):
+    def __init__(self, title: str = None, border_color: Color = None, color: Color = 0):
         self.title = title
         self.color = color
         self.border_color = border_color
+        self._terminal: Optional[Terminal] = None
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional["Tile"]):
         """Render current tile"""
         raise NotImplementedError
 
-    def _draw_borders(self, tbox):
+    def _draw_borders(self, tbox: TBox):
         # top border
         print(
             tbox.t.color(self.border_color)
@@ -59,7 +59,7 @@ class Tile(object):
             + border_br
         )
 
-    def _draw_borders_and_title(self, tbox):
+    def _draw_borders_and_title(self, tbox: TBox):
         """Draw borders and title as needed and returns
         inset (x, y, width, height)
         """
@@ -77,29 +77,29 @@ class Tile(object):
 
         return TBox(tbox.t, tbox.x, tbox.y, tbox.w, tbox.h)
 
-    def _fill_area(self, tbox, char, *a, **kw):  # FIXME
+    def _fill_area(self, tbox: TBox, char: str, *a, **kw):  # FIXME
         """Fill area with a character"""
         # for dx in range(0, height):
         #    print(tbox.t.move(x + dx, tbox.y) + char * width)
         pass
 
-    def display(self):
+    def display(self, terminal: Terminal = None):
         """Render current tile and its items. Recurse into nested splits
         if any.
         """
-        try:
+        if self._terminal is None:
+            t = self._terminal = terminal or Terminal()
+        else:
             t = self._terminal
-        except AttributeError:
-            t = self._terminal = Terminal()
-            tbox = TBox(t, 0, 0, t.width, t.height - 1)
-            self._fill_area(tbox.t, 0, 0, t.width, t.height - 1, "f")  # FIXME
 
+        tbox = TBox(t, 0, 0, t.width, t.height - 1)
+        self._fill_area(tbox, 0, 0, t.width, t.height - 1, "f")  # FIXME
         tbox = TBox(t, 0, 0, t.width, t.height - 1)
         self._display(tbox, None)
         # park cursor in a safe place and reset color
         print(t.move(t.height - 3, 0) + t.color(0))
 
-    def _draw_title(self, tbox, fill_all_width):
+    def _draw_title(self, tbox: TBox, fill_all_width: bool):
         if not self.title:
             return
         margin = int((tbox.w - len(self.title)) / 20)
@@ -117,11 +117,11 @@ class Tile(object):
 class Split(Tile):
     """Split a box vertically (VSplit) or horizontally (HSplit)"""
 
-    def __init__(self, *items, **kw):
+    def __init__(self, *items: Tile, **kw):
         super(Split, self).__init__(**kw)
         self.items = items
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         """Render current tile and its items. Recurse into nested splits"""
         tbox = self._draw_borders_and_title(tbox)
 
@@ -172,24 +172,20 @@ class Text(Tile):
 
     """
 
-    def __init__(self, text, color=0, *args, **kw):
-        super(Text, self).__init__(**kw)
-        self.text = text
+    def __init__(self, text: str, color: Color = 0, **kw):
+        super().__init__(**kw)
+        self.text: str = text
         self.color = color
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         tbox = self._draw_borders_and_title(tbox)
-        for dx, line in enumerate(self.text.splitlines()):
+        for dx, line in pad(self.text.splitlines()[-(tbox.h) :], tbox.h):
             print(
                 tbox.t.color(self.color)
                 + tbox.t.move(tbox.x + dx, tbox.y)
                 + line
                 + " " * (tbox.w - len(line))
             )
-        dx += 1
-        while dx < tbox.h:
-            print(tbox.t.move(tbox.x + dx, tbox.y) + " " * tbox.w)
-            dx += 1
 
 
 class Log(Tile):
@@ -197,25 +193,20 @@ class Log(Tile):
     Add new lines with :meth:`append`
     """
 
-    def __init__(self, *args, **kw):
+    def __init__(self, **kw):
+        super().__init__(**kw)
         self.logs = deque(maxlen=50)
-        super(Log, self).__init__(**kw)
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         tbox = self._draw_borders_and_title(tbox)
         n_logs = len(self.logs)
         log_range = min(n_logs, tbox.h)
         start = n_logs - log_range
         print(tbox.t.color(self.color))
-        for i in range(0, log_range):
-            line = self.logs[start + i]
-            print(tbox.t.move(tbox.x + i, tbox.y) + line + " " * (tbox.w - len(line)))
+        for dx, line in pad((self.logs[ln] for ln in range(start, n_logs)), tbox.h):
+            print(tbox.t.move(tbox.x + dx, tbox.y) + line + " " * (tbox.w - len(line)))
 
-        if i < tbox.h:
-            for i2 in range(i + 1, tbox.h):
-                print(tbox.t.move(tbox.x + i2, tbox.y) + " " * tbox.w)
-
-    def append(self, msg):
+    def append(self, msg: str):
         """Append a new log message at the bottom"""
         self.logs.append(msg)
 
@@ -223,27 +214,27 @@ class Log(Tile):
 class HGauge(Tile):
     """Horizontal gauge"""
 
-    def __init__(self, label=None, val=100, color=2, **kw):
-        kw["color"] = color
-        super(HGauge, self).__init__(**kw)
+    def __init__(self, label: str = None, val=100, color: Color = 2, **kw):
+        super().__init__(color=color, **kw)
         self.value = val
         self.label = label
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         tbox = self._draw_borders_and_title(tbox)
         if self.label:
             wi = (tbox.w - len(self.label) - 3) * self.value / 100
             v_center = int((tbox.h) * 0.5)
         else:
             wi = tbox.w * self.value / 100.0
+            v_center = None
         index = int((wi - int(wi)) * 7)
         bar = hbar_elements[-1] * int(wi) + hbar_elements[index]
         print(tbox.t.color(self.color) + tbox.t.move(tbox.x, tbox.y + 1))
         if self.label:
-            pad = tbox.w - 1 - len(self.label) - len(bar)
+            n_pad = tbox.w - 1 - len(self.label) - len(bar)
         else:
-            pad = tbox.w - len(bar)
-        bar += hbar_elements[0] * pad
+            n_pad = tbox.w - len(bar)
+        bar += hbar_elements[0] * n_pad
         # draw bar
         for dx in range(0, tbox.h):
             m = tbox.t.move(tbox.x + dx, tbox.y)
@@ -260,12 +251,11 @@ class HGauge(Tile):
 class VGauge(Tile):
     """Vertical gauge"""
 
-    def __init__(self, val=100, color=2, **kw):
-        kw["color"] = color
-        super(VGauge, self).__init__(**kw)
+    def __init__(self, val=100, color: Color = 2, **kw):
+        super().__init__(color=color, **kw)
         self.value = val
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         """Render current tile"""
         tbox = self._draw_borders_and_title(tbox)
         nh = tbox.h * (self.value / 100.5)
@@ -289,15 +279,16 @@ class ColorRangeVGauge(Tile):
     colormap=((50, 2), (100, 1))
     """
 
-    def __init__(self, val=100, colormap=(), **kw):
+    def __init__(self, val=100, colormap: Colormap = (), **kw):
         self.colormap = colormap
         super(ColorRangeVGauge, self).__init__(**kw)
         self.value = val
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         tbox = self._draw_borders_and_title(tbox)
         nh = tbox.h * (self.value / 100.5)
         filled_element = vbar_elements[-1]
+        col = 0
         for thresh, col in self.colormap:
             if thresh > self.value:
                 break
@@ -318,16 +309,16 @@ class ColorRangeVGauge(Tile):
 class VChart(Tile):
     """Vertical chart. Values must be between 0 and 100 and can be float."""
 
-    def __init__(self, val=100, *args, **kw):
-        super(VChart, self).__init__(**kw)
+    def __init__(self, val=100, **kw):
+        super().__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=50)
 
-    def append(self, dp):
+    def append(self, dp: float):
         """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         tbox = self._draw_borders_and_title(tbox)
         filled_element = hbar_elements[-1]
         scale = tbox.w / 100.0
@@ -348,16 +339,16 @@ class VChart(Tile):
 class HChart(Tile):
     """Horizontal chart, filled"""
 
-    def __init__(self, val=100, *args, **kw):
-        super(HChart, self).__init__(**kw)
+    def __init__(self, val=100, **kw):
+        super().__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
-    def append(self, dp):
+    def append(self, dp: float):
         """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
 
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         tbox = self._draw_borders_and_title(tbox)
         print(tbox.t.color(self.color))
         for dx in range(tbox.h):
@@ -385,20 +376,16 @@ class HChart(Tile):
 class HBrailleChart(Tile):
     """Horizontal chart made with dots"""
 
-    def __init__(self, val=100, *args, **kw):
-        super(HBrailleChart, self).__init__(**kw)
+    def __init__(self, val=100, **kw):
+        super().__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
-    def append(self, dp):
+    def append(self, dp: float):
         """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
 
-    def _generate_braille(self, l, r):
-        v = 0x28 * 256 + (braille_left[l] + braille_right[r])
-        return unichr(v)
-
-    def _display(self, tbox, parent):
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
         tbox = self._draw_borders_and_title(tbox)
         print(tbox.t.color(self.color))
         for dx in range(tbox.h):
@@ -421,11 +408,11 @@ class HBrailleChart(Tile):
                         index2 = int((q2 - int(q2)) * 4)
                     else:
                         index2 = -1  # no dot
-                    bar += self._generate_braille(index1, index2)
+                    bar += generate_braille(index1, index2)
                 elif dx == int(q2):
                     # the right dot only is in the current rune
                     index2 = int((q2 - int(q2)) * 4)
-                    bar += self._generate_braille(-1, index2)
+                    bar += generate_braille(-1, index2)
                 else:
                     bar += " "
 
@@ -435,22 +422,14 @@ class HBrailleChart(Tile):
 class HBrailleFilledChart(Tile):
     """Horizontal chart, filled with dots"""
 
-    def __init__(self, val=100, *args, **kw):
-        super(HBrailleFilledChart, self).__init__(**kw)
+    def __init__(self, val=100, **kw):
+        super().__init__(**kw)
         self.value = val
         self.datapoints = deque(maxlen=500)
 
-    def append(self, dp):
+    def append(self, dp: float):
         """Append a new value: int or float between 1 and 100"""
         self.datapoints.append(dp)
-
-    def _generate_braille(self, lmax, rmax):
-        v = 0x28 * 256
-        for l in range(lmax):
-            v += braille_r_left[l]
-        for r in range(rmax):
-            v += braille_r_right[r]
-        return unichr(v)
 
     def _display(self, tbox, parent):
         tbox = self._draw_borders_and_title(tbox)
@@ -481,6 +460,35 @@ class HBrailleFilledChart(Tile):
                     index2 = 3
                 else:
                     index2 = 0
-                bar += self._generate_braille(index1, index2)
+                bar += generate_filled_braille(index1, index2)
 
             print(tbox.t.move(tbox.x + dx, tbox.y) + bar)
+
+
+@contextlib.contextmanager
+def open_terminal():
+    t = Terminal()
+    with t.fullscreen(), t.hidden_cursor():
+        yield t
+
+
+def pad(itr, n, fillvalue=""):
+    i = -1
+    for i, value in enumerate(itr):
+        yield i, value
+    i += 1
+    yield from enumerate(itertools.repeat(fillvalue, n - i), i)
+
+
+def generate_braille(l: int, r: int):
+    v = 0x28 * 256 + (braille_left[l] + braille_right[r])
+    return chr(v)
+
+
+def generate_filled_braille(lmax: int, rmax: int):
+    v = 0x28 * 256
+    for l in range(lmax):
+        v += braille_r_left[l]
+    for r in range(rmax):
+        v += braille_r_right[r]
+    return chr(v)
