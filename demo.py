@@ -1,48 +1,47 @@
-
-from time import sleep, time
 import math
+from time import sleep, time
 
 from dashing import *
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     ui = HSplit(
-            VSplit(
-                HGauge(val=50, title="only title", border_color=5),
-                HGauge(label="only label", val=20, border_color=5),
-                HGauge(label="only label", val=30, border_color=5),
-                HGauge(label="only label", val=50, border_color=5),
-                HGauge(label="only label", val=80, border_color=5),
-                HGauge(val=20),
-                HGauge(label="label, no border", val=55),
-                HSplit(
-                    VGauge(val=0, border_color=2),
-                    VGauge(val=5, border_color=2),
-                    VGauge(val=30, border_color=2),
-                    VGauge(val=50, border_color=2),
-                    VGauge(val=80, border_color=2, color=4),
-                    VGauge(val=95, border_color=2, color=3),
-                    ColorRangeVGauge(
-                        val=100,
-                        border_color=2,
-                        colormap=(
-                            (33, 2),
-                            (66, 4),
-                            (100, 1),
-                        )
+        VSplit(
+            HGauge(val=50, title="only title", border_color=5),
+            HGauge(label="only label", val=20, border_color=5),
+            HGauge(label="only label", val=30, border_color=5),
+            HGauge(label="only label", val=50, border_color=5),
+            HGauge(label="only label", val=80, border_color=5),
+            HGauge(val=20),
+            HGauge(label="label, no border", val=55),
+            HSplit(
+                VGauge(val=0, border_color=2),
+                VGauge(val=5, border_color=2),
+                VGauge(val=30, border_color=2),
+                VGauge(val=50, border_color=2),
+                VGauge(val=80, border_color=2, color=4),
+                VGauge(val=95, border_color=2, color=3),
+                ColorRangeVGauge(
+                    val=100,
+                    border_color=2,
+                    colormap=(
+                        (33, 2),
+                        (66, 4),
+                        (100, 1),
                     ),
-                )
+                ),
             ),
-            VSplit(
-                Text('Hello World,\nthis is dashing.', border_color=2),
-                Log(title='logs', border_color=5),
-                VChart(border_color=2, color=2),
-                HChart(border_color=2, color=2),
-                HBrailleChart(border_color=2, color=2),
-                # HBrailleFilledChart(border_color=2, color=2),
-            ),
-            title='Dashing',
-        )
+        ),
+        VSplit(
+            Text("Hello World,\nthis is dashing.", border_color=2),
+            Log(title="logs", border_color=5),
+            VChart(border_color=2, color=2),
+            HChart(border_color=2, color=2),
+            HBrailleChart(border_color=2, color=2),
+            # HBrailleFilledChart(border_color=2, color=2),
+        ),
+        title="Dashing",
+    )
     log = ui.items[1].items[1]
     vchart = ui.items[1].items[2]
     hchart = ui.items[1].items[3]
@@ -71,4 +70,4 @@ if __name__ == '__main__':
         # bfchart.append(50 + 50 * math.sin(cycle / 16.0))
         ui.display()
 
-        sleep(1.0/25)
+        sleep(1.0 / 25)

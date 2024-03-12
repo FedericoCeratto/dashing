@@ -22,7 +22,7 @@ project = "dashing"
 copyright = "2020, Federico Ceratto"
 author = "Federico Ceratto"
 
-master_doc = 'index'
+master_doc = "index"
 
 # -- General configuration ---------------------------------------------------
 

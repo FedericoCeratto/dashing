@@ -1,5 +1,6 @@
 # Editor
 .vscode/
+.idea/
 
 # Binary
 *.py[cod]
