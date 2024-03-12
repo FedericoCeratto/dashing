@@ -7,9 +7,12 @@ from dashing import (
     HChart,
     HGauge,
     HSplit,
+    Log,
+    Text,
     VChart,
     VGauge,
     VSplit,
+    open_terminal,
 )
 
 if __name__ == "__main__":
@@ -60,23 +63,25 @@ if __name__ == "__main__":
     log.append("1 Hello")
     log.append("2 -----")
     prev_time = time()
-    for cycle in range(0, 100):
-        ui.items[0].items[0].value = int(50 + 49.9 * math.sin(cycle / 80.0))
-        ui.items[0].items[1].value = int(50 + 45 * math.sin(cycle / 20.0))
-        ui.items[0].items[2].value = int(50 + 45 * math.sin(cycle / 30.0 + 3))
 
-        vgauges = ui.items[0].items[-1].items
-        for gaugenum, vg in enumerate(vgauges):
-            vg.value = 50 + 49.9 * math.sin(cycle / 12.0 + gaugenum)
+    with open_terminal() as terminal:
+        for cycle in range(0, 100):
+            ui.items[0].items[0].value = int(50 + 49.9 * math.sin(cycle / 80.0))
+            ui.items[0].items[1].value = int(50 + 45 * math.sin(cycle / 20.0))
+            ui.items[0].items[2].value = int(50 + 45 * math.sin(cycle / 30.0 + 3))
 
-        t = int(time())
-        if t != prev_time:
-            log.append("%s" % t)
-            prev_time = t
-        vchart.append(50 + 50 * math.sin(cycle / 16.0))
-        hchart.append(99.9 * abs(math.sin(cycle / 26.0)))
-        bchart.append(50 + 50 * math.sin(cycle / 6.0))
-        # bfchart.append(50 + 50 * math.sin(cycle / 16.0))
-        ui.display()
+            vgauges = ui.items[0].items[-1].items
+            for gaugenum, vg in enumerate(vgauges):
+                vg.value = 50 + 49.9 * math.sin(cycle / 12.0 + gaugenum)
 
-        sleep(1.0 / 25)
+            t = int(time())
+            if t != prev_time:
+                log.append("%s" % t)
+                prev_time = t
+            vchart.append(50 + 50 * math.sin(cycle / 16.0))
+            hchart.append(99.9 * abs(math.sin(cycle / 26.0)))
+            bchart.append(50 + 50 * math.sin(cycle / 6.0))
+            # bfchart.append(50 + 50 * math.sin(cycle / 16.0))
+            ui.display(terminal)
+
+            sleep(1.0 / 25)
