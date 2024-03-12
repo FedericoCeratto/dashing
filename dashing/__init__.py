@@ -87,7 +87,7 @@ Color = Literal[0, 1, 2, 3, 4, 5, 6, 7]
 Colormap = Tuple[Tuple[float, Color], ...]
 
 
-class Tile(object):
+class Tile:
     def __init__(self, title: str = None, border_color: Color = None, color: Color = 0):
         self.title = title
         self.color = color
