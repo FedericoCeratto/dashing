@@ -7,5 +7,5 @@ dashing
 Overview
 ========
 
-.. automodule:: dashing.dashing
+.. automodule:: dashing
    :members:
