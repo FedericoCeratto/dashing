@@ -60,6 +60,7 @@ You can easily nest splits and tiles as in::
 
 __version__ = "0.1.0"
 
+import abc
 import contextlib
 import itertools
 from collections import deque, namedtuple
@@ -101,7 +102,7 @@ Colormap = Tuple[Tuple[float, ColorValue], ...]
 TBox = namedtuple("TBox", "t x y w h")
 
 
-class Tile:
+class Tile(abc.ABC):
     def __init__(
         self,
         title: str = None,
@@ -113,9 +114,10 @@ class Tile:
         self.border_color = border_color
         self._terminal: Optional[Terminal] = None
 
+    @abc.abstractmethod
     def _display(self, tbox: TBox, parent: Optional["Tile"]):
         """Render current tile"""
-        raise NotImplementedError
+        pass
 
     def _draw_borders_and_title(self, tbox: TBox):
         """
