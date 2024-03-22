@@ -4,10 +4,9 @@ dashing
 .. toctree::
    :maxdepth: 2
 
+   getting_started
    developers
-
-* :ref:`genindex`
-* :ref:`modindex`
+   api
 
 Installation
 ============
@@ -15,9 +14,3 @@ Installation
 You can install the package with::
 
    pip install dashing
-
-Overview
-========
-
-.. automodule:: dashing
-   :members:
