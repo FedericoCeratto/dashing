@@ -7,14 +7,14 @@ over every character on the screen, use ncurses or similar.
 Dashing automatically fills the screen with "tiles".
 
 There are 2 type of "container" tiles that allow vertical and horizontal splitting
-called VSplit and HSplit. Dashing scales them based on the screen size.
+called ``VSplit`` and ``HSplit``. Dashing scales them based on the screen size.
 
-Any tile passed as argument at init time will be nested using the .items attribute
+Any tile passed as argument at init time will be nested using the ``.items`` attribute
 
-.items can be used to access, add or remove nested tiles.
+``.items`` can be used to access, add or remove nested tiles.
 
 You can easily extend Dashing with new tile types. Subclass :class:`Tile`, implement
-__init__ and _display.
+``__init__`` and ``_display``.
 
 The other types of tiles are:
     - :class:`Text` - simple text
@@ -27,11 +27,11 @@ The other types of tiles are:
     - :class:`HBrailleChart`
     - :class:`HBrailleFilledChart`
 
-All tiles accept title, color, border_color keywords arguments at init time.
+All tiles accept ``title``, ``color``, ``border_color`` keywords arguments at init time.
 
 Gauges represent an instant value between 0 and 100.
-You can set a value at init time using the val keyword argument or access the
-.value attribute at any time.
+You can set a value at init time using the ``val`` keyword argument or access the
+``.value`` attribute at any time.
 
 Charts represent a sequence of values between 0 and 100 and scroll automatically.
 
@@ -88,14 +88,25 @@ Colormap = Tuple[Tuple[float, Color], ...]
 
 
 class Tile(object):
+    """Base class for all Dashing tiles."""
+
     def __init__(self, title: str = None, border_color: Color = None, color: Color = 0):
+        """
+        :param title: Title of the tile
+        :param border_color: Color of the border. Setting this will enable a border and shrinks available size by 1
+          character on each side.
+        :param color: Color of the text inside the tile.
+        """
         self.title = title
         self.color = color
         self.border_color = border_color
         self._terminal: Optional[Terminal] = None
 
     def _display(self, tbox: TBox, parent: Optional["Tile"]):
-        """Render current tile"""
+        """
+        Implement this method when subclassing :class:`.Tile`, to fill in the available space outlined by
+        the ``tbox`` with the tile content.
+        """
         raise NotImplementedError
 
     def _draw_borders_and_title(self, tbox: TBox):

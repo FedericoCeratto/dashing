@@ -1,11 +1,16 @@
 dashing
 -------
 
-* :ref:`genindex`
-* :ref:`modindex`
+.. toctree::
+   :maxdepth: 2
 
-Overview
-========
+   getting_started
+   developers
+   api
 
-.. automodule:: dashing
-   :members:
+Installation
+============
+
+You can install the package with::
+
+   pip install dashing
