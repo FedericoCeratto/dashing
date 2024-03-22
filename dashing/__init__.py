@@ -64,7 +64,7 @@ import abc
 import contextlib
 import itertools
 from collections import deque, namedtuple
-from enum import Enum
+from enum import IntEnum
 from typing import Literal, Optional, Tuple, Union
 
 from blessed import Terminal
@@ -85,7 +85,7 @@ braille_r_left = (0x04, 0x02, 0x01)
 braille_r_right = (0x20, 0x10, 0x08)
 
 
-class Color(Enum):
+class Color(IntEnum):
     Black = 0
     Red = 1
     Green = 2
