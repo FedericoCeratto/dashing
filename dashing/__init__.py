@@ -60,10 +60,12 @@ You can easily nest splits and tiles as in::
 
 __version__ = "0.1.0"
 
+import abc
 import contextlib
 import itertools
 from collections import deque, namedtuple
-from typing import Literal, Optional, Tuple
+from enum import IntEnum
+from typing import Literal, Optional, Tuple, Union
 
 from blessed import Terminal
 
@@ -82,21 +84,40 @@ braille_right = (0x08, 0x10, 0x20, 0x80, 0)
 braille_r_left = (0x04, 0x02, 0x01)
 braille_r_right = (0x20, 0x10, 0x08)
 
+
+class Color(IntEnum):
+    Black = 0
+    Red = 1
+    Green = 2
+    Yellow = 3
+    Blue = 4
+    Magenta = 5
+    Cyan = 6
+    White = 7
+
+
+ColorLiteral = Literal[0, 1, 2, 3, 4, 5, 6, 7]
+ColorValue = Union[Color, ColorLiteral]
+Colormap = Tuple[Tuple[float, ColorValue], ...]
 TBox = namedtuple("TBox", "t x y w h")
-Color = Literal[0, 1, 2, 3, 4, 5, 6, 7]
-Colormap = Tuple[Tuple[float, Color], ...]
 
 
-class Tile(object):
-    def __init__(self, title: str = None, border_color: Color = None, color: Color = 0):
+class Tile(abc.ABC):
+    def __init__(
+        self,
+        title: str = None,
+        border_color: ColorValue = None,
+        color: ColorValue = Color.Black,
+    ):
         self.title = title
         self.color = color
         self.border_color = border_color
         self._terminal: Optional[Terminal] = None
 
+    @abc.abstractmethod
     def _display(self, tbox: TBox, parent: Optional["Tile"]):
         """Render current tile"""
-        raise NotImplementedError
+        pass
 
     def _draw_borders_and_title(self, tbox: TBox):
         """
@@ -227,7 +248,7 @@ class Text(Tile):
 
     """
 
-    def __init__(self, text: str, color: Color = 0, **kw):
+    def __init__(self, text: str, color: ColorValue = Color.Black, **kw):
         super().__init__(**kw)
         self.text: str = text
         self.color = color
@@ -269,7 +290,9 @@ class Log(Tile):
 class HGauge(Tile):
     """Horizontal gauge"""
 
-    def __init__(self, label: str = None, val=100, color: Color = 2, **kw):
+    def __init__(
+        self, label: str = None, val=100, color: ColorValue = Color.Green, **kw
+    ):
         super().__init__(color=color, **kw)
         self.value = val
         self.label = label
@@ -306,7 +329,7 @@ class HGauge(Tile):
 class VGauge(Tile):
     """Vertical gauge"""
 
-    def __init__(self, val=100, color: Color = 2, **kw):
+    def __init__(self, val=100, color: ColorValue = Color.Green, **kw):
         super().__init__(color=color, **kw)
         self.value = val
 
