@@ -25,7 +25,11 @@ dev = [
     "isort~=5.12",
     "flake8-pyproject~=1.2",
     "bump-my-version~=0.18",
-    "dashing[test]"
+    "dashing[test,docs]"
+]
+docs = [
+    "sphinx~=7.0",
+    "furo~=2024.1"
 ]
 test = [
     "pytest~=8.0",
