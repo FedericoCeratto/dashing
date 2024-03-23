@@ -60,6 +60,7 @@ You can easily nest splits and tiles as in::
 
 __version__ = "0.1.0"
 
+from colorsys import hsv_to_rgb
 import contextlib
 import itertools
 from collections import deque, namedtuple
@@ -85,6 +86,78 @@ braille_r_right = (0x20, 0x10, 0x08)
 TBox = namedtuple("TBox", "t x y w h")
 Color = Literal[0, 1, 2, 3, 4, 5, 6, 7]
 Colormap = Tuple[Tuple[float, Color], ...]
+
+
+def color_rgb(
+    color: str = "",
+    rgb: Optional[Tuple[int, int, int]] = None,
+    hsv: Optional[Tuple[float, float, float]] = None,
+):
+    """Parse color expressed in different formats and return RGB values
+    Formats:
+        color("#RRGGBB") RGB in hex
+        color(rgb=(1, 20, 8)) RGB as integers
+        color("*HHSSVV") HSV in hex with values ranging 00 to FF
+        color(hsv=(.5, .2, .7)) HSV as floats
+    """
+    if color:
+        if color.startswith("#"):
+            rgb = (int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16))
+
+        elif color.startswith("*00a0FF"):
+            h = int(color[1:3], 16) / 255.0
+            s = int(color[3:5], 16) / 255.0
+            v = int(color[5:7], 16) / 255.0
+            hsv = (h, s, v)
+        else:
+            raise ValueError("Invalid color")
+
+    if hsv is not None:
+        h, s, v = hsv
+        rgb = tuple(int(c * 255) for c in hsv_to_rgb(h, s, v))
+
+    if rgb is None:
+        rgb = (0, 0, 0)
+
+    return rgb
+
+
+def color(
+    term: Terminal,
+    color: str = "",
+    rgb: Optional[Tuple[int, int, int]] = None,
+    hsv: Optional[Tuple[float, float, float]] = None,
+):
+    """Parse color expressed in different formats and return a printable
+    Formats:
+        color("#RRGGBB") RGB in hex
+        color(rgb=(1, 20, 8)) RGB as integers
+        color("*HHSSVV") HSV in hex with values ranging 00 to FF
+        color(hsv=(.5, .2, .7)) HSV as floats
+    """
+    if color:
+        if color.startswith("#"):
+            rgb = (int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16))
+
+        elif color.startswith("*00a0FF"):
+            hsv = (
+                int(color[1:3], 16) / 255.0,
+                int(color[3:5], 16) / 255.0,
+                int(color[5:7], 16) / 255.0,
+            )
+        else:
+            # This never raises
+            return getattr(term, color)
+            # raise ValueError(f"Invalid color '{color}'")
+
+    if hsv is not None:
+        h, s, v = hsv
+        rgb = tuple(int(c * 255) for c in hsv_to_rgb(h, s, v))
+
+    if rgb is None:
+        rgb = (0, 0, 0)
+
+    return term.color_rgb(rgb[0], rgb[1], rgb[2])
 
 
 class Tile(object):
@@ -365,6 +438,38 @@ class ColorRangeVGauge(Tile):
             print(m + bar)
 
 
+class ColorGradientVGauge(Tile):
+    """Vertical gauge with color gradient."""
+
+    def __init__(self, val=100, gradient="TODO", **kw):
+        # TODO: configurable gradients
+        super().__init__(**kw)
+        self.value = val
+
+    def _display(self, tbox: TBox, parent: Optional[Tile]):
+        tbox = self._draw_borders_and_title(tbox)
+        nh = tbox.h * (self.value / 100.5)
+        filled_element = vbar_elements[-1]
+
+        # TODO: configurable gradients
+        h = (1 - self.value / 100) / 3
+        s = 0.8
+        v = 0.8
+        col = color(tbox.t, hsv=(h, s, v))
+        print(tbox.t.move(tbox.x, tbox.y) + col)
+        for dx in range(tbox.h):
+            m = tbox.t.move(tbox.x + tbox.h - dx - 1, tbox.y)
+            if dx < int(nh):
+                bar = filled_element * tbox.w
+            elif dx == int(nh):
+                index = int((nh - int(nh)) * 8)
+                bar = vbar_elements[index] * tbox.w
+            else:
+                bar = " " * tbox.w
+
+            print(m + bar)
+
+
 class VChart(Tile):
     """Vertical chart. Values must be between 0 and 100 and can be float."""
 
@@ -531,6 +636,7 @@ def open_terminal() -> Generator:
     the UI closes.
     """
     t = Terminal()
+
     with t.fullscreen(), t.hidden_cursor():
         yield t
 
