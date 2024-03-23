@@ -118,19 +118,20 @@ class Tile(object):
                 + border_h * (tbox.w - 2)
                 + border_br
             )
-            if self.title is None:
-                # top border without title
-                border_t = border_h * (tbox.w - 2)
-            else:
+            if self.title:
                 # top border with title
                 margin = int((tbox.w - len(self.title)) / 20)
                 border_t = (
                     border_h * (margin - 1) + " " * margin + self.title + " " * margin
                 )
                 border_t += (tbox.w - len(border_t) - 2) * border_h
+            else:
+                # top border without title
+                border_t = border_h * (tbox.w - 2)
+
             # top
             print(tbox.t.move(tbox.x, tbox.y) + border_tl + border_t + border_tr)
-        elif self.title is not None:
+        elif self.title:
             # top title without border
             margin = int((tbox.w - len(self.title)) / 20)
 
@@ -142,7 +143,7 @@ class Tile(object):
         if self.border_color is not None:
             return TBox(tbox.t, tbox.x + 1, tbox.y + 1, tbox.w - 2, tbox.h - 2)
 
-        elif self.title is not None:
+        elif self.title:
             return TBox(tbox.t, tbox.x + 1, tbox.y, tbox.w - 1, tbox.h - 1)
 
         return TBox(tbox.t, tbox.x, tbox.y, tbox.w, tbox.h)
