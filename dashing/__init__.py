@@ -88,7 +88,9 @@ Colormap = Tuple[Tuple[float, Color], ...]
 
 
 class Tile(object):
-    def __init__(self, title: str = None, border_color: Color = None, color: Color = 0):
+    def __init__(
+        self, title: str = "", border_color: Optional[Color] = None, color: Color = 0
+    ):
         self.title = title
         self.color = color
         self.border_color = border_color
@@ -151,7 +153,7 @@ class Tile(object):
         #    print(tbox.t.move(x + dx, tbox.y) + char * width)
         pass
 
-    def display(self, terminal: Terminal = None):
+    def display(self, terminal: Optional[Terminal] = None):
         """Render current tile and its items. Recurse into nested splits
         if any.
         """
@@ -161,7 +163,7 @@ class Tile(object):
             t = self._terminal
 
         tbox = TBox(t, 0, 0, t.width, t.height - 1)
-        self._fill_area(tbox, 0, 0, t.width, t.height - 1, "f")  # FIXME
+        # self._fill_area(tbox, 0, 0, t.width, t.height - 1, "f")  # FIXME
         tbox = TBox(t, 0, 0, t.width, t.height - 1)
         self._display(tbox, None)
         # park cursor in a safe place and reset color
@@ -181,7 +183,7 @@ class Split(Tile):
 
         if not self.items:
             # empty split
-            self._fill_area(tbox, " ")
+            # self._fill_area(tbox, " ")
             return
 
         if isinstance(self, VSplit):
@@ -201,14 +203,15 @@ class Split(Tile):
                 y += item_width
 
         # Fill leftover area
-        if isinstance(self, VSplit):
-            leftover_x = tbox.h - x + 1
-            if leftover_x > 0:
-                self._fill_area(TBox(tbox.t, x, y, tbox.w, leftover_x), " ")
-        else:
-            leftover_y = tbox.w - y + 1
-            if leftover_y > 0:
-                self._fill_area(TBox(tbox.t, x, y, leftover_y, tbox.h), " ")
+        # FIXME
+        # if isinstance(self, VSplit):
+        #     leftover_x = tbox.h - x + 1
+        #     if leftover_x > 0:
+        #         self._fill_area(TBox(tbox.t, x, y, tbox.w, leftover_x), " ")
+        # else:
+        #     leftover_y = tbox.w - y + 1
+        #     if leftover_y > 0:
+        #         self._fill_area(TBox(tbox.t, x, y, leftover_y, tbox.h), " ")
 
 
 class VSplit(Split):
@@ -269,7 +272,7 @@ class Log(Tile):
 class HGauge(Tile):
     """Horizontal gauge"""
 
-    def __init__(self, label: str = None, val=100, color: Color = 2, **kw):
+    def __init__(self, label: str = "", val=100, color: Color = 2, **kw):
         super().__init__(color=color, **kw)
         self.value = val
         self.label = label
