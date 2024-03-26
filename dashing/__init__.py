@@ -60,10 +60,12 @@ You can easily nest splits and tiles as in::
 
 __version__ = "0.1.0"
 
+import abc
 import contextlib
 import itertools
 from collections import deque, namedtuple
-from typing import Literal, Optional, Tuple
+from enum import IntEnum
+from typing import Iterable, Literal, Optional, Sequence, Tuple
 
 from blessed import Terminal
 
@@ -85,6 +87,16 @@ braille_r_right = (0x20, 0x10, 0x08)
 TBox = namedtuple("TBox", "t x y w h")
 Color = Literal[0, 1, 2, 3, 4, 5, 6, 7]
 Colormap = Tuple[Tuple[float, Color], ...]
+
+
+class Side(IntEnum):
+    Left = 0
+    Right = 1
+
+
+class Clip(IntEnum):
+    Head = 0
+    Tail = 1
 
 
 class Tile(object):
