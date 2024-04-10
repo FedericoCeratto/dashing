@@ -24,7 +24,17 @@ dev = [
     "pre-commit~=3.0",
     "isort~=5.12",
     "flake8-pyproject~=1.2",
-    "bump-my-version~=0.18"
+    "bump-my-version~=0.18",
+    "dashing[test,docs]"
+]
+docs = [
+    "sphinx~=7.0",
+    "furo~=2024.1"
+]
+test = [
+    "pytest~=8.0",
+    "pyte~=0.8",
+    "pexpect~=4.9"
 ]
 
 [tool.isort]
