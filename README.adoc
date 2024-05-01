@@ -18,6 +18,8 @@ Features:
 - [x] Automatic scaling of all elements
 - [x] Vertical and horizontal tile splitting
 - [x] Braille-filled charts
+- [x] Theming with 24-bit RGB and HSV colors
+- [x] Color gradients
 
 === Dependencies
 
