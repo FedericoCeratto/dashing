@@ -258,7 +258,7 @@ class Split(Tile):
 
     def __init__(self, *items: Tile, **kw) -> None:
         super().__init__(**kw)
-        self.items = items
+        self.items = list(items)
 
     def _display(self, tbox: TBox, parent: Optional[Tile]) -> None:
         """Render current tile and its items. Recurse into nested splits"""
