@@ -131,3 +131,10 @@ if __name__ == '__main__':
           sleep(1.0 / 25)
 ----
 
+=== Development
+
+Use pytest for testing.
+
+`tests/test_integ.py` contains integration tests that runs a simulated terminal and captures the output
+
+Also `minidemo.py` can be used for manual testing.
