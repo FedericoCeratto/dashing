@@ -13,10 +13,14 @@ import pyte
 import pytest
 
 
-def run(w, h, path):
-    """Run a pyte virtual terminal"""
+def run(w, h, path, prefill=""):
+    """Run a pyte virtual terminal
+    Optionally fill the screen with a character to simulate stale content
+    """
     screen = pyte.Screen(w, h)
     stream = pyte.ByteStream(screen)
+    if prefill:
+        stream.feed(b"\x1b[H" + prefill.encode() * (w * h) + b"\x1b[H")
     env = dict(PYTHONPATH=".", TERM="xterm-256color", COLORTERM="truecolor")
     # Run with the same interpreter as pytest, not the one in the shebang
     child = pexpect.spawn(sys.executable, [path], env=env, dimensions=(h, w))
@@ -251,3 +255,10 @@ label, no border ▉▉▉▉▉▉▉▉▉▉▉▌▏▏▏▏▏▏▏▏▏
                                         └──────────────────────────────────────┘
             """
     check(out, exp)
+
+
+def test_no_stale_cells():
+    # Every cell must be redrawn, e.g. after a window resize
+    for w, h in ((80, 30), (80, 17), (30, 30)):
+        out = run(w, h, "./tests/runner_1.py", prefill="@")
+        assert not any("@" in line for line in out), "\n".join(out)

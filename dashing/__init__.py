@@ -411,6 +411,9 @@ class Tile:
         buf = _Buf()
         self._display(buf, tbox)
 
+        # the last line is not used: clear it as it might contain stale output
+        buf.add(t.move(t.height - 1, 0), t.clear_eol)
+
         # park cursor in a safe place and reset color
         buf.add(t.move(t.height - 3, 0), self.border_color.pr(t))
 
