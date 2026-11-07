@@ -6,16 +6,16 @@
 
 from __future__ import unicode_literals
 
-import os
-
 import pyte
+import pytest
 import pexpect
 
 
 def run(w, h, path):
+    """Run a pyte virtual terminal"""
     screen = pyte.Screen(w, h)
     stream = pyte.ByteStream(screen)
-    env = dict(os.environ, PYTHONPATH=".", TERM="xterm-256color")
+    env = dict(PYTHONPATH=".", TERM="xterm-256color")
     child = pexpect.spawn(path, env=env, dimensions=(h, w))
     child.expect(pexpect.EOF)
     stream.feed(child.before)
@@ -24,19 +24,24 @@ def run(w, h, path):
     return out
 
 
-def check(out, exp):
+def check(raw_out, exp):
+    """Check expected output"""
     exp = [x.rstrip() for x in exp.splitlines()]
-    out = [x.rstrip() for x in out]
+    out = [x.rstrip() for x in raw_out]
     len_ok = len(out) == len(exp)
 
-    if exp != out:
-        print("-- out --")
-        for line in out:
-            print(line.rstrip())
-        print("-- end out --")
+    if exp == out:
+        return
+
+    print("-- out --")
+    for e, o in zip(exp, out):
+        m = "*" if e != o else " "
+        print(m, "Exp", repr(e))
+        print(m, "out", repr(o))
+    print("-- end out --")
 
     assert len_ok, f"Number of lines in output: {len(out)} != expected: {len(exp)}"
-    assert out == exp
+    pytest.fail("Fail")
 
 
 def test_basic_80_30():
