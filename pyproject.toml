@@ -12,36 +12,27 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)"]
 dynamic = ["version", "description"]
-dependencies = ["blessed~=1.20"]
+requires-python = ">=3.10"
+dependencies = ["blessed>=1.20"]
 
 [project.urls]
 Home = "https://github.com/FedericoCeratto/dashing"
 
 [project.optional-dependencies]
 dev = [
-    "black~=24.0",
-    "flake8~=7.0",
-    "pre-commit~=3.0",
-    "isort~=5.12",
-    "flake8-pyproject~=1.2",
-    "bump-my-version~=0.18",
+    "pre-commit>=3.0",
+    "bump-my-version>=0.18",
     "dashing[test,docs]"
 ]
 docs = [
-    "sphinx~=7.0",
-    "furo~=2024.1"
+    "sphinx>=7.0",
+    "furo>=2024.1"
 ]
 test = [
-    "pytest~=8.0",
-    "pyte~=0.8",
-    "pexpect~=4.9"
+    "pytest>=8.0",
+    "pyte>=0.8",
+    "pexpect>=4.9"
 ]
-
-[tool.isort]
-profile = "black"
-
-[tool.flake8]
-max-line-length = 88
 
 [tool.bumpversion]
 current_version = "0.1.0"
