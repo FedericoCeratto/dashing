@@ -34,11 +34,15 @@ def check(raw_out, exp):
         return
 
     print("-- out --")
+    print("\n".join(out))
+    print("-- end out --")
+    print("-- diff --")
     for e, o in zip(exp, out):
         m = "*" if e != o else " "
         print(m, "Exp", repr(e))
         print(m, "out", repr(o))
-    print("-- end out --")
+
+    print("-- end diff --")
 
     assert len_ok, f"Number of lines in output: {len(out)} != expected: {len(exp)}"
     pytest.fail("Fail")
