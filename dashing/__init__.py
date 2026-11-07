@@ -64,10 +64,10 @@ __version__ = "0.2.0"
 
 import colorsys
 import contextlib
-from collections import namedtuple, deque
 import itertools
 import warnings
-from typing import Literal, Optional, Tuple, Generator, List, Union
+from collections import deque, namedtuple
+from typing import Generator, List, Literal, Optional, Tuple, Union
 
 from blessed import Terminal
 
@@ -652,8 +652,11 @@ class VChart(Tile):
             index = 50 - (tbox.h) + dx
             try:
                 dp = self.datapoints[index] * scale
-                index = int((dp - int(dp)) * 8)
-                bar = filled_element * int(dp) + hbar_elements[index]
+                bar = filled_element * int(dp)
+                if len(bar) < tbox.w:
+                    # partially-filled element
+                    index = int((dp - int(dp)) * len(hbar_elements))
+                    bar += hbar_elements[index]
                 assert len(bar) <= tbox.w, dp
                 bar += " " * (tbox.w - len(bar))
             except IndexError:
