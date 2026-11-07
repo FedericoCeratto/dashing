@@ -650,7 +650,7 @@ class VChart(Tile):
         self.datapoints.append(dp)
 
     def _display(self, buf: _Buf, tbox: TBox) -> None:
-        tbox = self._draw_borders_and_title(tbox)
+        tbox = self._draw_borders_and_title(buf, tbox)
         filled_element = hbar_elements[-1]
         scale = tbox.w / 100.0
         buf.add(self.text_color.pr(tbox.t))
