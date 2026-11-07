@@ -80,3 +80,15 @@ def test_hgauge_colors():
 
     # the background is never set
     assert {s.buffer[y][x].bg for y in range(3) for x in range(12)} == {"default"}
+
+
+def test_reset_color(capsys):
+    t = blessed.Terminal(kind="xterm-256color", force_styling=True)
+    t.number_of_colors = 1 << 24
+    ui = da.HSplit(da.Text("hi", color="#ff0000"), border_color="#00ff00")
+    ui.display(t)
+
+    screen = pyte.Screen(t.width, t.height)
+    pyte.Stream(screen).feed(capsys.readouterr().out)
+    assert screen.cursor.attrs.fg == "default"
+    assert screen.cursor.attrs.bg == "default"
