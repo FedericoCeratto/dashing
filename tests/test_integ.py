@@ -6,6 +6,8 @@
 
 from __future__ import unicode_literals
 
+import os
+
 import pyte
 import pexpect
 
@@ -13,7 +15,8 @@ import pexpect
 def run(w, h, path):
     screen = pyte.Screen(w, h)
     stream = pyte.ByteStream(screen)
-    child = pexpect.spawn(path, dimensions=(h, w))
+    env = dict(os.environ, PYTHONPATH=".", TERM="xterm-256color")
+    child = pexpect.spawn(path, env=env, dimensions=(h, w))
     child.expect(pexpect.EOF)
     stream.feed(child.before)
     out = screen.display
