@@ -564,34 +564,35 @@ class HGauge(Tile):
         #
         if self.label:
             label_wid = len(self.label)
-            bar_wid = (tbox.w - label_wid - 3) * self.value / 100
             v_center = int((tbox.h) * 0.5)
-            bar_iwid = int(bar_wid)
-            filler_wid = tbox.w - bar_iwid - label_wid - 2
-
+            # the label is followed by a space
+            avail = max(0, tbox.w - label_wid - 1)
         else:
             label_wid = 0
-            bar_wid = tbox.w * self.value / 100.0
             v_center = None
-            bar_iwid = int(bar_wid)
-            filler_wid = tbox.w - bar_iwid - 1
+            avail = tbox.w
+
+        value = min(max(self.value, 0), 100)
+        bar_wid = avail * value / 100.0
+        bar_iwid = int(bar_wid)
 
         # Stores a row of the gauge (colored bar + filler)
         blk: List[str] = []
 
         # Fill the colored part
         for pos in range(bar_iwid):
-            col = interpolate_colors(self.color_high, self.color_low, (bar_iwid + filler_wid), pos)
+            col = interpolate_colors(self.color_high, self.color_low, max(1, avail - 1), pos)
             blk.append(col.pr(tbox.t))
             blk.append(hbar_elements[-1])  # full element
 
-        # Pick the char for the partially-filled element
-        selector = int((bar_wid - int(bar_wid)) * 7)
-        blk.append(hbar_elements[selector])
+        if bar_iwid < avail:
+            # Pick the char for the partially-filled element
+            selector = int((bar_wid - bar_iwid) * 7)
+            blk.append(hbar_elements[selector])
 
-        # Fill the remaining part with thin lines
-        blk.append(self.text_color.pr(tbox.t))
-        blk.append(hbar_elements[0] * filler_wid)
+            # Fill the remaining part with thin lines
+            blk.append(self.text_color.pr(tbox.t))
+            blk.append(hbar_elements[0] * (avail - bar_iwid - 1))
 
         # Assemble the pieces
         for dx in range(0, tbox.h):
@@ -618,7 +619,8 @@ class VGauge(Tile):
     def _display(self, buf: _Buf, tbox: TBox) -> None:
         """Render current tile"""
         tbox = self._draw_borders_and_title(buf, tbox)
-        nh = tbox.h * (self.value / 100.5)
+        value = min(max(self.value, 0), 100)
+        nh = tbox.h * (value / 100.5)
         buf.add(tbox.t.move(tbox.x, tbox.y) + self.text_color.pr(tbox.t))
         for dx in range(tbox.h):
             m = tbox.t.move(tbox.x + tbox.h - dx - 1, tbox.y)

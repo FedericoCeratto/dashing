@@ -92,3 +92,63 @@ def test_reset_color(capsys):
     pyte.Stream(screen).feed(capsys.readouterr().out)
     assert screen.cursor.attrs.fg == "default"
     assert screen.cursor.attrs.bg == "default"
+
+
+def test_hgauge_full():
+    g = da.HGauge(val=100, border=False)
+    assert _render(g, 20, 1) == ["▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉"]
+
+
+def test_hgauge_over_100():
+    g = da.HGauge(val=112, border=False)
+    assert _render(g, 20, 1) == ["▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉"]
+
+
+def test_hgauge_empty():
+    g = da.HGauge(val=0, border=False)
+    assert _render(g, 20, 1) == ["▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏"]
+
+
+def test_hgauge_negative():
+    g = da.HGauge(val=-10, border=False)
+    assert _render(g, 20, 1) == ["▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏"]
+
+
+def test_hgauge_label_full():
+    g = da.HGauge(label="label", val=100, border=False)
+    assert _render(g, 20, 1) == ["label ▉▉▉▉▉▉▉▉▉▉▉▉▉▉"]
+
+
+def test_hgauge_label_over_100():
+    g = da.HGauge(label="label", val=112, border=False)
+    assert _render(g, 20, 1) == ["label ▉▉▉▉▉▉▉▉▉▉▉▉▉▉"]
+
+
+def test_hgauge_label_empty():
+    g = da.HGauge(label="label", val=0, border=False)
+    assert _render(g, 20, 1) == ["label ▏▏▏▏▏▏▏▏▏▏▏▏▏▏"]
+
+
+def test_vgauge_full():
+    g = da.VGauge(val=100, border=False)
+    assert _render(g, 3, 4) == ["███", "███", "███", "███"]
+
+
+def test_vgauge_over_100():
+    g = da.VGauge(val=112, border=False)
+    assert _render(g, 3, 4) == ["███", "███", "███", "███"]
+
+
+def test_vgauge_half():
+    g = da.VGauge(val=50, border=False)
+    assert _render(g, 3, 4) == ["   ", "   ", "███", "███"]
+
+
+def test_vgauge_empty():
+    g = da.VGauge(val=0, border=False)
+    assert _render(g, 3, 4) == ["   ", "   ", "   ", "▁▁▁"]
+
+
+def test_vgauge_negative():
+    g = da.VGauge(val=-10, border=False)
+    assert _render(g, 3, 4) == ["   ", "   ", "   ", "▁▁▁"]
