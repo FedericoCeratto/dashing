@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+"""Used by tests/test_integ.py"""
 
 from dashing import (
-    ColorRangeVGauge,
     HBrailleChart,
     HChart,
     HGauge,
@@ -26,8 +26,8 @@ def main():
             HGauge(label="only label", val=30, border_color=5),
             HGauge(label="only label", val=50, border_color=5),
             HGauge(label="only label", val=80, border_color=5),
-            HGauge(val=20),
-            HGauge(label="label, no border", val=55),
+            HGauge(val=20, border=False),
+            HGauge(label="label, no border", val=55, border=False),
             HSplit(
                 VGauge(val=0, border_color=2),
                 VGauge(val=5, border_color=2),
@@ -35,14 +35,8 @@ def main():
                 VGauge(val=50, border_color=2),
                 VGauge(val=80, border_color=2, color=4),
                 VGauge(val=95, border_color=2, color=3),
-                ColorRangeVGauge(
+                VGauge(
                     val=100,
-                    border_color=2,
-                    colormap=(
-                        (33, 2),
-                        (66, 3),
-                        (100, 1),
-                    ),
                 ),
             ),
         ),
