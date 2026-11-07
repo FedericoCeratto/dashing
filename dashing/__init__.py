@@ -382,7 +382,7 @@ class Tile:
             return TBox(tbox.t, tbox.x + 1, tbox.y + 1, tbox.w - 2, tbox.h - 2)
 
         elif self.title:
-            return TBox(tbox.t, tbox.x + 1, tbox.y, tbox.w - 1, tbox.h - 1)
+            return TBox(tbox.t, tbox.x + 1, tbox.y, tbox.w, tbox.h - 1)
 
         return TBox(tbox.t, tbox.x, tbox.y, tbox.w, tbox.h)
 
