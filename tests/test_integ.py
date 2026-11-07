@@ -17,7 +17,7 @@ def run(w, h, path):
     """Run a pyte virtual terminal"""
     screen = pyte.Screen(w, h)
     stream = pyte.ByteStream(screen)
-    env = dict(PYTHONPATH=".", TERM="xterm-256color")
+    env = dict(PYTHONPATH=".", TERM="xterm-256color", COLORTERM="truecolor")
     # Run with the same interpreter as pytest, not the one in the shebang
     child = pexpect.spawn(sys.executable, [path], env=env, dimensions=(h, w))
     child.expect(pexpect.EOF)

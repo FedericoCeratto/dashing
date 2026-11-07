@@ -19,15 +19,22 @@ def test_col():
         da.color_rgb()
 
 
-def _render(tile, w, h):
-    """Render a tile on a w x h pyte screen and return the screen lines"""
+def _screen(tile, w, h):
+    """Render a tile on a w x h pyte screen and return the screen"""
 
     t = blessed.Terminal(kind="xterm-256color", force_styling=True)
+    # Force truecolor to get exact RGB values instead of the nearest palette color
+    t.number_of_colors = 1 << 24
     buf = da._Buf()
     tile._display(buf, da.TBox(t, 0, 0, w, h))
     screen = pyte.Screen(w, h)
     pyte.Stream(screen).feed("".join(buf._buf))
-    return screen.display
+    return screen
+
+
+def _render(tile, w, h):
+    """Render a tile on a w x h pyte screen and return the screen lines"""
+    return _screen(tile, w, h).display
 
 
 def test_vchart_full():
@@ -46,3 +53,30 @@ def test_vchart_fraction():
 
     exp = ["▉▉▉▉▉▉▉▉▉▉          "]
     assert _render(ch, 20, 1) == exp
+
+
+def test_hgauge_colors():
+    g = da.HGauge(val=60, border_color="#00ff00", color_low="#ff0000", color_high="#0000ff")
+    s = _screen(g, 12, 3)
+    row = [s.buffer[1][x] for x in range(12)]
+
+    assert s.display[1] == "│▉▉▉▉▉▉▏▏▏▏│"
+
+    exp = [
+        "00ff00",  # green border
+        "ff0000",  # gradient from red
+        "ff7100",
+        "ffe200",
+        "aaff00",
+        "38ff00",
+        "00ff38",
+        "00ff38",
+        "808080",  # default color
+        "808080",
+        "808080",
+        "00ff00",  # green border
+    ]
+    assert [c.fg for c in row] == exp
+
+    # the background is never set
+    assert {s.buffer[y][x].bg for y in range(3) for x in range(12)} == {"default"}
