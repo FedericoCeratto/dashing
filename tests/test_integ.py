@@ -8,9 +8,9 @@ from __future__ import unicode_literals
 
 import sys
 
+import pexpect
 import pyte
 import pytest
-import pexpect
 
 
 def run(w, h, path):

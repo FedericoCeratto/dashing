@@ -2,6 +2,8 @@
 
 """Used by tests/test_integ.py"""
 
+import math
+
 from dashing import (
     HBrailleChart,
     HChart,
@@ -13,9 +15,6 @@ from dashing import (
     VGauge,
     VSplit,
 )
-
-
-import math
 
 
 def main():

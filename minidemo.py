@@ -4,21 +4,21 @@
     Small demo
 """
 
-import time
-import sys
 import math
+import sys
+import time
 
 from dashing import (
-    HSplit,
-    VSplit,
-    HGauge,
-    VGauge,
-    Text,
-    Log,
-    HChart,
+    RGB,
     HBrailleChart,
     HBrailleFilledChart,
-    RGB,
+    HChart,
+    HGauge,
+    HSplit,
+    Log,
+    Text,
+    VGauge,
+    VSplit,
 )
 
 
