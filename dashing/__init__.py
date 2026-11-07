@@ -346,7 +346,9 @@ class Tile:
         Draw borders and title as needed and returns
         inset (x, y, width, height)
         """
-        if self.border:
+        # Skip the border if there is no space left inside it
+        show_border = self.border and tbox.h >= 3 and tbox.w >= 3
+        if show_border:
             buf.add(self.border_color.pr(tbox.t))
             # left and right
             for dx in range(1, tbox.h - 1):
@@ -378,7 +380,7 @@ class Tile:
             title = " " * margin + self.title + " " * (tbox.w - margin - len(self.title))
             buf.add(tbox.t.move(tbox.x, tbox.y) + title)
 
-        if self.border:
+        if show_border:
             return TBox(tbox.t, tbox.x + 1, tbox.y + 1, tbox.w - 2, tbox.h - 2)
 
         elif self.title:
