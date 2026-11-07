@@ -362,9 +362,7 @@ class Tile:
             if self.title:
                 # top border with title
                 margin = int((tbox.w - len(self.title)) / 20)
-                border_t = (
-                    border_h * (margin - 1) + " " * margin + self.title + " " * margin
-                )
+                border_t = border_h * (margin - 1) + " " * margin + self.title + " " * margin
                 border_t += (tbox.w - len(border_t) - 2) * border_h
             else:
                 # top border without title
@@ -377,16 +375,14 @@ class Tile:
             # top title without border
             margin = int((tbox.w - len(self.title)) / 20)
 
-            title = (
-                " " * margin + self.title + " " * (tbox.w - margin - len(self.title))
-            )
+            title = " " * margin + self.title + " " * (tbox.w - margin - len(self.title))
             buf.add(tbox.t.move(tbox.x, tbox.y) + title)
 
         if self.border:
             return TBox(tbox.t, tbox.x + 1, tbox.y + 1, tbox.w - 2, tbox.h - 2)
 
         elif self.title:
-            return TBox(tbox.t, tbox.x + 1, tbox.y, tbox.w - 0, tbox.h - 1)
+            return TBox(tbox.t, tbox.x + 1, tbox.y, tbox.w - 1, tbox.h - 1)
 
         return TBox(tbox.t, tbox.x, tbox.y, tbox.w, tbox.h)
 
@@ -580,9 +576,7 @@ class HGauge(Tile):
 
         # Fill the colored part
         for pos in range(bar_iwid):
-            col = interpolate_colors(
-                self.color_high, self.color_low, (bar_iwid + filler_wid), pos
-            )
+            col = interpolate_colors(self.color_high, self.color_low, (bar_iwid + filler_wid), pos)
             blk.append(col.pr(tbox.t))
             blk.append(hbar_elements[-1])  # full element
 
