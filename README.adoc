@@ -1,6 +1,5 @@
 
-image:https://img.shields.io/badge/status-alpha-orange.svg[badge]
-image:https://img.shields.io/badge/version-0.1.0-orange.svg[badge]
+image:https://img.shields.io/badge/status-beta-orange.svg[badge]
 image:https://img.shields.io/pypi/v/dashing.svg?style=plastic["Latest Version", link="https://pypi.python.org/pypi/dashing"]
 image:https://img.shields.io/badge/License-LGPL%20v3-blue.svg[License]
 image:https://api.reuse.software/badge/github.com/FedericoCeratto/dashing[REUSE,link="https://api.reuse.software/info/github.com/FedericoCeratto/dashing"]
@@ -37,98 +36,32 @@ pip install dashing
 
 === Usage
 
-See the documentation at https://dashing.readthedocs.io/en/latest/
+See the demo at https://github.com/FedericoCeratto/dashing/blob/main/examples/demo.py
+and the documentation at https://dashing.readthedocs.io/en/latest/
 
 .Usage
 [source,python]
 ----
-import math
-from time import time, sleep
-
-from dashing import (
-    ColorRangeVGauge,
-    HBrailleChart,
-    HChart,
-    HGauge,
-    HSplit,
-    Log,
-    Text,
-    VChart,
-    VGauge,
-    VSplit,
+# Colors can be "#RRGGBB" (RGB), "*HHSSVV" (HSV) or RGB(r, g, b)
+ui = HSplit(
+    VSplit(
+        HGauge(title="title", color_low="*A000FF", color_high="*A00000"),
+        VGauge(border_color="#00ff00", color_low="#0000ff", color_high="#00ffff"),
+    ),
+    VSplit(
+        Text("Hello World,\nthis is dashing.", border_color="#ff0000"),
+        Log(title="logs", color_high=RGB(0, 0, 0), color_low=RGB(200, 200, 200)),
+        HBrailleFilledChart(),
+    ),
+    title="Dashing",
 )
 
-if __name__ == '__main__':
-
-    ui = HSplit(
-        VSplit(
-            HGauge(val=50, title="only title", border_color=5),
-            HGauge(label="only label", val=20, border_color=5),
-            HGauge(label="only label", val=30, border_color=5),
-            HGauge(label="only label", val=50, border_color=5),
-            HGauge(label="only label", val=80, border_color=5),
-            HGauge(val=20),
-            HGauge(label="label, no border", val=55),
-            HSplit(
-                VGauge(val=0, border_color=2),
-                VGauge(val=5, border_color=2),
-                VGauge(val=30, border_color=2),
-                VGauge(val=50, border_color=2),
-                VGauge(val=80, border_color=2, color=4),
-                VGauge(val=95, border_color=2, color=3),
-                ColorRangeVGauge(
-                    val=100,
-                    border_color=2,
-                    colormap=(
-                        (33, 2),
-                        (66, 3),
-                        (100, 1),
-                    )
-                ),
-            )
-        ),
-        VSplit(
-            Text('Hello World,\nthis is dashing.', border_color=2),
-            Log(title='logs', border_color=5),
-            VChart(border_color=2, color=2),
-            HChart(border_color=2, color=2),
-            HBrailleChart(border_color=2, color=2),
-            # HBrailleFilledChart(border_color=2, color=2),
-        ),
-        title='Dashing',
-    )
+with open_terminal() as terminal:
     log = ui.items[1].items[1]
-    vchart = ui.items[1].items[2]
-    hchart = ui.items[1].items[3]
-    bchart = ui.items[1].items[4]
-    # bfchart = ui.items[1].items[5]
-    log.append("0 -----")
-    log.append("1 Hello")
-    log.append("2 -----")
-    prev_time = time()
+    log.append("log line")
 
-    with open_terminal() as terminal:
-      for cycle in range(0, 200):
-          ui.items[0].items[0].value = int(50 + 49.9 * math.sin(cycle / 80.0))
-          ui.items[0].items[1].value = int(50 + 45 * math.sin(cycle / 20.0))
-          ui.items[0].items[2].value = int(50 + 45 * math.sin(cycle / 30.0 + 3))
+ui.display(terminal)
 
-          vgauges = ui.items[0].items[-1].items
-          for gaugenum, vg in enumerate(vgauges):
-              vg.value = 50 + 49.9 * math.sin(cycle / 12.0 + gaugenum)
-
-          t = int(time())
-          if t != prev_time:
-              log.append("%s" % t)
-              prev_time = t
-          vchart.append(50 + 50 * math.sin(cycle / 16.0))
-          hchart.append(99.9 * abs(math.sin(cycle / 26.0)))
-          bchart.append(50 + 50 * math.sin(cycle / 6.0))
-          # bfchart.append(50 + 50 * math.sin(cycle / 16.0))
-
-          ui.display(terminal)
-
-          sleep(1.0 / 25)
 ----
 
 === Development
