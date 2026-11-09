@@ -11,6 +11,7 @@ image:https://raw.githubusercontent.com/FedericoCeratto/dashing/gh-pages/tty.gif
 Similar libraries for other languages: https://github.com/gizak/termui[termui] https://github.com/chjj/blessed[blessed] https://github.com/yaronn/blessed-contrib[blessed-contrib]
 
 Features:
+
 - [x] Sub-character resolution (partially filled blocks)
 - [x] Horizontal and vertical bars with gradient coloring
 - [x] Text and log panes with automated scrolling
